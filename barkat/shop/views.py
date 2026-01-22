@@ -35,7 +35,10 @@ def add_cart(request,id):
     return redirect('/cart')
 
 def cart(request):
-    items=Cart.objects.all()
+    if not request.session.get('user'):
+        return redirect ('/login')
+    
+    items=Cart.objects.filter(username=request.session['user'])
     total=0
 
     for i in items:
@@ -47,17 +50,17 @@ def cart(request):
     })     #! Send data to templates
 
 def remove_cart(request,id):
-    Cart.objects.filter(id=id).delete()
+    Cart.objects.filter(id=id, username=request.session['user']).delete()
     return redirect ('/cart')
 
 def increase_qty(request,id):
-    item = Cart.objects.get(id=id)
+    item = Cart.objects.get(id=id, username=request.session['user'])
     item.quantity+=1
     item.save()
     return redirect('/cart')
 
 def decrease_qty(request,id):
-    item = Cart.objects.get(id=id)
+    item = Cart.objects.get(id=id, username=request.session['user'])
     if item.quantity > 1:
         item.quantity -= 1
         item.save()
