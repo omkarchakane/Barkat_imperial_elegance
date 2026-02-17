@@ -1,23 +1,36 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-imperial fixed-top">
   <div class="container">
     <a class="navbar-brand" href="/">BARKAT</a>
+    
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+    </button>
 
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        
+        <li class="nav-item">
+          <a class="nav-link" href="/">Home</a>
+        </li>
 
         {% if request.session.user %}
           <li class="nav-item">
-            <span class="nav-link text-white">
-              {{ request.session.user }}
-            </span>
+            <span class="nav-link" style="opacity: 0.7;">Welcome, {{ request.session.customer_name|default:request.session.user }}</span>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="/cart">Cart<span class="badge bg-success">{{ cart_count}}</span></a>
+            <a class="nav-link position-relative" href="/cart">
+              <i class="bi bi-bag"></i> Cart
+              {% if cart_count > 0 %}
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill badge-gold">
+                {{ cart_count }}
+              </span>
+              {% endif %}
+            </a>
           </li>
 
-          <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
+          <li class="nav-item ms-lg-3">
+            <a class="btn btn-sm btn-outline-light rounded-pill px-3" href="/logout">Logout</a>
           </li>
 
         {% else %}
@@ -25,8 +38,8 @@
             <a class="nav-link" href="/login">Login</a>
           </li>
 
-          <li class="nav-item">
-            <a class="nav-link" href="/register">Register</a>
+          <li class="nav-item ms-lg-2">
+            <a class="btn btn-imperial px-4 py-2" href="/register" style="font-size: 0.8rem; padding: 8px 20px;">Register</a>
           </li>
         {% endif %}
 

@@ -1,0 +1,378 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+    --primary-color: #4A0404;
+    /* Deep Maroon */
+    --secondary-color: #2C0202;
+    /* Darker Maroon */
+    --accent-color: #D4AF37;
+    /* Gold */
+    --accent-hover: #F8D876;
+    /* Lighter Gold */
+    --text-color: #333333;
+    --light-bg: #FAF9F6;
+    /* Off-white / Cream */
+    --white: #ffffff;
+    --glass-bg: rgba(74, 4, 4, 0.95);
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    color: var(--text-color);
+    background-color: var(--light-bg);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navbar-brand {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Navbar */
+.navbar-imperial {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+}
+
+.navbar-imperial .navbar-brand {
+    color: var(--accent-color) !important;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.navbar-imperial .nav-link {
+    color: var(--white) !important;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+.navbar-imperial .nav-link:hover {
+    color: var(--accent-color) !important;
+}
+
+.badge-gold {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    height: 100vh;
+    min-height: 100vh;
+    margin-top: 70px;
+    /* Ensure it covers full screen even on mobile */
+    /* Removed background-image to avoid 'farm' look if image is wrong.
+       Using a deep luxury gradient instead. */
+    background: linear-gradient(135deg, #2b0202 0%, #4a0404 50%, #1a0101 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 10s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.hero-overlay {
+    /* Overlay texture for realism (Noise/Grain can be added via URL if available, 
+       but for now we use a subtle radial gradient to focus center) */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: var(--white);
+    padding: 2rem;
+    max-width: 900px;
+}
+
+.hero-logo {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    margin-bottom: 2rem;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .hero-logo {
+        max-width: 250px;
+        /* Smaller on mobile to prevent cutoff */
+    }
+}
+
+.hero-logo:hover {
+    transform: scale(1.02);
+}
+
+/* Hide Navbar Text Logo on Mobile to save space, or globally if desired */
+.navbar-brand {
+    display: none;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.hero-title {
+    font-size: 4rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-subtitle {
+    font-size: 1.6rem;
+    font-weight: 300;
+    margin-bottom: 3rem;
+    letter-spacing: 2px;
+    color: #e0e0e0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.btn-imperial {
+    padding: 15px 45px;
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    font-weight: 600;
+    transition: all 0.4s ease;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-imperial::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.btn-imperial:hover::before {
+    left: 100%;
+}
+
+.btn-imperial:hover {
+    background-color: var(--accent-color);
+    color: #1a0101;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Section Headings */
+.section-title {
+    text-align: center;
+    font-size: 2.8rem;
+    color: var(--primary-color);
+    margin-bottom: 3.5rem;
+    position: relative;
+    padding-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background-color: var(--accent-color);
+}
+
+/* Product Cards */
+.product-card {
+    border: none;
+    border-radius: 4px;
+    /* Sharper corners for elegance */
+    overflow: hidden;
+    background: var(--white);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(74, 4, 4, 0.12);
+}
+
+.product-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    height: 480px;
+    /* Taller images */
+}
+
+.product-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s ease;
+}
+
+.product-card:hover .product-img-wrapper img {
+    transform: scale(1.08);
+}
+
+.card-body {
+    padding: 1.5rem;
+    text-align: center;
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    color: #111;
+    margin-bottom: 0.5rem;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0.5px;
+}
+
+.price {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.btn-add-cart {
+    background-color: #fff;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    width: 100%;
+    padding: 12px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-add-cart:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+/* Footer */
+footer {
+    background-color: #0d0101;
+    /* Much darker, almost black */
+    color: #aeaeae;
+    padding: 4rem 0 2rem;
+    margin-top: auto;
+    /* Push to bottom if using flex column on body */
+    border-top: 4px solid var(--primary-color);
+}
+
+footer h5 {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 1.5rem;
+}
+
+footer a {
+    color: #888;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+footer a:hover {
+    color: var(--accent-color);
+    padding-left: 5px;
+    /* Subtle movement */
+}
+
+footer .bi {
+    color: var(--accent-color);
+    margin-right: 0.8rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+}
+
+/* Search Bar */
+.search-container {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.form-control-imperial {
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    padding: 12px 25px;
+    transition: all 0.3s;
+}
+
+.form-control-imperial:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}

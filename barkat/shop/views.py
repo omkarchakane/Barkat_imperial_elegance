@@ -1,7 +1,5 @@
 from django.shortcuts import render,redirect
 from .models import Product,Review,Cart,UserRegister
-
-# Create your views here.
 def home(request):
     search = request.GET.get('search')
     if search :
@@ -27,11 +25,16 @@ def add_cart(request,id):
     if not request.session.get('user'):
         return redirect ('/login')
     product = Product.objects.get(id=id)
-    Cart.objects.create(
-        username = request.session['user'],
-        product=product,
-        quantity=1
-    )
+    cart_item = Cart.objects.filter(username=request.session['user'], product=product).first()
+    if cart_item:
+        cart_item.quantity += 1
+        cart_item.save()
+    else:
+        Cart.objects.create(
+            username = request.session['user'],
+            product=product,
+            quantity=1
+        )
     return redirect('/cart')
 
 def cart(request):
@@ -72,6 +75,9 @@ def register(request):
         email = request.POST['email']
         password = request.POST['password']
 
+        if UserRegister.objects.filter(email=email).exists():
+             return redirect('/register')
+
         UserRegister.objects.create(
             name = name,
             email= email,
@@ -93,6 +99,7 @@ def login_check(request):
 
         if user:
             request.session['user'] = email   #!Session start
+            request.session['customer_name'] = user[0].name
             return redirect('/')
         else:
             return redirect('/login')
