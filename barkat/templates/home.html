@@ -14,6 +14,58 @@
     </div>
 </section>
 
+<!-- New Arrivals Carousel Section -->
+{% if posters or new_arrivals %}
+<section class="carousel-section">
+    <div class="container-fluid">
+        <h2 class="carousel-title">Exclusive Offers</h2>
+        <div class="carousel-container">
+            <button class="carousel-btn carousel-btn-prev" id="carouselPrev">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+
+            <div class="carousel-wrapper">
+                {% for poster in posters %}
+                <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                    <div class="carousel-poster-card">
+                        <img src="{{ poster.image.url }}" alt="{{ poster.title }}">
+                        <div class="poster-text">{{ poster.title }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% for p in new_arrivals %}
+                <div class="carousel-item{% if not posters and forloop.first %} active{% endif %}">
+                    <div class="carousel-product-card">
+                        <div class="carousel-img-wrapper">
+                            {% if p.image %}
+                            <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                            {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                                No Image
+                            </div>
+                            {% endif %}
+                            {% if p.offer_text %}
+                            <div class="offer-badge">{{ p.offer_text }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="carousel-card-body">
+                            <h5 class="carousel-card-title">{{ p.name }}</h5>
+                            <p class="carousel-price">₹ {{ p.price }}</p>
+                            <a href="/product/{{ p.id }}" class="carousel-btn-view">View</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button class="carousel-btn carousel-btn-next" id="carouselNext">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Main Content -->
 <div class="container" style="margin-top: 5rem;" id="collection">
 
@@ -63,5 +115,37 @@
     </div>
 
 </div>
+
+<script>
+// fade/slide carousel behavior
+function initCarousel() {
+    const items = document.querySelectorAll('.carousel-section .carousel-item');
+    if (!items.length) return;
+    let current = 0;
+    function show(index) {
+        if (index === current) return;
+        // slide out current
+        const prev = items[current];
+        prev.classList.add('slide-out');
+        prev.classList.remove('active');
+        // activate next
+        current = index;
+        const nextItem = items[current];
+        nextItem.classList.add('active');
+        nextItem.classList.remove('slide-out');
+    }
+    function next() {
+        show((current + 1) % items.length);
+    }
+    function prev() {
+        show((current - 1 + items.length) % items.length);
+    }
+    document.getElementById('carouselNext').addEventListener('click', next);
+    document.getElementById('carouselPrev').addEventListener('click', prev);
+    // auto advance every 5 seconds
+    setInterval(next, 5000);
+}
+document.addEventListener('DOMContentLoaded', initCarousel);
+</script>
 
 {% endblock %}

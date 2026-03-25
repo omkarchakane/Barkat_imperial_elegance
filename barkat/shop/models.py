@@ -5,9 +5,17 @@ class Product(models.Model):
     price = models.IntegerField()
     image = models.FileField(upload_to='products/')
     description =models.TextField()
+    is_new_arrival = models.BooleanField(default=False)
+    offer_text = models.CharField(max_length=100, blank=True, null=True)
+
+
+class OfferPoster(models.Model):
+    title = models.CharField(max_length=150)
+    image = models.FileField(upload_to='posters/')
+    active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
+        return self.title
     
 
 class Cart(models.Model):

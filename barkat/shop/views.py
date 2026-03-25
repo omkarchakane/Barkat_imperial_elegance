@@ -1,12 +1,17 @@
 from django.shortcuts import render,redirect
-from .models import Product,Review,Cart,UserRegister
+from .models import Product,Review,Cart,UserRegister,OfferPoster
 def home(request):
     search = request.GET.get('search')
     if search :
         products = Product.objects.filter(name__icontains=search) #!Case-insensitive search
     else:
-        products = Product.objects.all()    
-    return render(request,"home.html",{'products':products})
+        products = Product.objects.all()
+    
+    # Get new arrival products for carousel
+    new_arrivals = Product.objects.filter(is_new_arrival=True)[:8]
+    # Get active posters
+    posters = OfferPoster.objects.filter(active=True)
+    return render(request,"home.html",{'products':products, 'new_arrivals':new_arrivals, 'posters':posters})
 
 def product(request, id):
     product =Product.objects.get(id=id)  #! show the single data 
