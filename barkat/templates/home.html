@@ -94,6 +94,35 @@
                         No Image Available
                     </div>
                     {% endif %}
+                    
+                    <!-- Quick Actions Overlay -->
+                    <div class="product-actions">
+                        <button class="btn-action quick-view-btn" data-bs-toggle="modal" data-bs-target="#quickViewModal" data-product-id="{{ p.id }}" title="Quick View">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        {% if request.session.user %}
+                            {% if p.id in wishlist_products %}
+                            <a href="/remove_wishlist/{{ p.id }}" class="btn-action" title="Remove from Wishlist">
+                                <i class="bi bi-heart-fill text-danger"></i>
+                            </a>
+                            {% else %}
+                            <a href="/add_wishlist/{{ p.id }}" class="btn-action" title="Add to Wishlist">
+                                <i class="bi bi-heart"></i>
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <a href="/login" class="btn-action" title="Add to Wishlist">
+                            <i class="bi bi-heart"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if p.offer_text %}
+                    <span class="badge-offer">{{ p.offer_text }}</span>
+                    {% endif %}
+                    {% if p.is_new_arrival %}
+                    <span class="badge-new">New</span>
+                    {% endif %}
                 </div>
                 
                 <div class="card-body">
@@ -114,6 +143,24 @@
         {% endfor %}
     </div>
 
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="quickViewContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -146,6 +193,30 @@ function initCarousel() {
     setInterval(next, 5000);
 }
 document.addEventListener('DOMContentLoaded', initCarousel);
+
+// Quick View Modal
+document.addEventListener('DOMContentLoaded', function() {
+    const quickViewModal = document.getElementById('quickViewModal');
+    const quickViewContent = document.getElementById('quickViewContent');
+    
+    quickViewModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product-id');
+        
+        // Show loading
+        quickViewContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+        
+        // Fetch quick view content
+        fetch(`/quick_view/${productId}/`)
+            .then(response => response.text())
+            .then(html => {
+                quickViewContent.innerHTML = html;
+            })
+            .catch(error => {
+                quickViewContent.innerHTML = '<p class="text-center text-muted">Error loading product details</p>';
+            });
+    });
+});
 </script>
 
 {% endblock %}

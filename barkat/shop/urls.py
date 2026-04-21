@@ -14,4 +14,9 @@ urlpatterns = [
     path('login/',views.login),
     path('login_check/',views.login_check),
     path('logout/',views.logout),
+    # New features
+    path('quick_view/<int:id>/', views.quick_view, name='quick_view'),
+    path('add_wishlist/<int:id>/', views.add_wishlist, name='add_wishlist'),
+    path('remove_wishlist/<int:id>/', views.remove_wishlist, name='remove_wishlist'),
+    path('wishlist/', views.wishlist, name='wishlist'),
 ]
