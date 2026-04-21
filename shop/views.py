@@ -79,14 +79,14 @@ def add_wishlist(request, id):
     
     product = Product.objects.get(id=id)
     Wishlist.objects.get_or_create(username=request.session['user'], product=product)
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect('/')
 
 def remove_wishlist(request, id):
     if not request.session.get('user'):
         return redirect('/login')
     
     Wishlist.objects.filter(username=request.session['user'], product_id=id).delete()
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect('/wishlist')
 
 def wishlist(request):
     if not request.session.get('user'):
