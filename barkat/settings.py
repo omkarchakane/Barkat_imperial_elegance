@@ -153,22 +153,29 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Cloudinary Configuration for media storage
+import os as os_module
 USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
+CLOUDINARY_URL_ENV = os_module.environ.get('CLOUDINARY_URL', '')
 
-if USE_CLOUDINARY:
+if USE_CLOUDINARY and CLOUDINARY_URL_ENV:
     # Configure django-cloudinary-storage for media uploads
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     
-    # Cloudinary settings (requires CLOUDINARY_URL environment variable)
+    # Initialize Cloudinary with the environment variable
     import cloudinary
     cloudinary.config(secure=True)
     
-    # Let Cloudinary handle the media URL - don't set MEDIA_URL to /media/
-    # django-cloudinary-storage will return proper Cloudinary CDN URLs
-    MEDIA_URL = '/media/'  # This is just a placeholder - actual URLs come from Cloudinary
+    # Extract cloud name from CLOUDINARY_URL for proper media serving
+    # Format: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+    try:
+        cloud_name = CLOUDINARY_URL_ENV.split('@')[-1]
+        MEDIA_URL = f'https://res.cloudinary.com/{cloud_name}/image/upload/'
+    except Exception as e:
+        print(f"Warning: Could not parse CLOUDINARY_URL: {e}")
+        MEDIA_URL = '/media/'
     
 else:
-    # Local storage (for development)
+    # Local storage (for development or when Cloudinary is not configured)
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
