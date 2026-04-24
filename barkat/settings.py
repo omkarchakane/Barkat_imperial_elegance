@@ -154,10 +154,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
 
 if USE_CLOUDINARY:
-    # Cloudinary settings (automatically reads CLOUDINARY_URL environment variable)
-    import cloudinary
-    cloudinary.config(secure=True)
-    
+    # Don't import cloudinary here - configure it lazily to avoid startup errors
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     MEDIA_URL = '/media/'
 else:
