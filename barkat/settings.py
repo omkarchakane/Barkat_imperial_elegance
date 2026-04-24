@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'shop',
 ]
 
@@ -154,9 +156,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
 
 if USE_CLOUDINARY:
-    # Don't import cloudinary here - configure it lazily to avoid startup errors
+    # Configure django-cloudinary-storage for media uploads
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     MEDIA_URL = '/media/'
+    
+    # Cloudinary settings (requires CLOUDINARY_URL environment variable)
+    import cloudinary
+    cloudinary.config(secure=True)
 else:
     # Local storage (for development)
     MEDIA_URL = '/media/'
