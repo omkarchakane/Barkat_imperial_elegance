@@ -158,11 +158,15 @@ USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
 if USE_CLOUDINARY:
     # Configure django-cloudinary-storage for media uploads
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    MEDIA_URL = '/media/'
     
     # Cloudinary settings (requires CLOUDINARY_URL environment variable)
     import cloudinary
     cloudinary.config(secure=True)
+    
+    # Let Cloudinary handle the media URL - don't set MEDIA_URL to /media/
+    # django-cloudinary-storage will return proper Cloudinary CDN URLs
+    MEDIA_URL = '/media/'  # This is just a placeholder - actual URLs come from Cloudinary
+    
 else:
     # Local storage (for development)
     MEDIA_URL = '/media/'
