@@ -152,27 +152,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Cloudinary Configuration for media storage
-import os as os_module
-USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
-
-if USE_CLOUDINARY:
-    # Use cloudinary for file uploads
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    MEDIA_URL = '/media/'
-    
-    # Initialize Cloudinary SDK - it reads CLOUDINARY_URL from environment
-    import cloudinary
-    try:
-        cloudinary.config(secure=True)
-        print("[DEBUG] Cloudinary initialized successfully")
-    except Exception as e:
-        print(f"[ERROR] Failed to initialize Cloudinary: {e}")
-else:
-    # Local storage (for development and production)
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    print("[DEBUG] Using local file storage")
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 

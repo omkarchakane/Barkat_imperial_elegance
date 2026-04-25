@@ -1,3 +1,7 @@
+from django.contrib import messages
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.shortcuts import render,redirect
 from django.db import models
 from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist
@@ -145,19 +149,27 @@ def decrease_qty(request,id):
 
 def register(request):
     if request.method =="POST":
-        name = request.POST['name']
-        email = request.POST['email']
+        name = request.POST['name'].strip()
+        email = request.POST['email'].strip().lower()
         password = request.POST['password']
 
         if UserRegister.objects.filter(email=email).exists():
-             return redirect('/register')
+            messages.error(request, 'An account with this email already exists.')
+            return redirect('/register')
+
+        try:
+            validate_password(password)
+        except ValidationError as exc:
+            messages.error(request, ' '.join(exc.messages))
+            return redirect('/register')
 
         UserRegister.objects.create(
             name = name,
             email= email,
-            password = password
+            password = make_password(password)
         )
 
+        messages.success(request, 'Your account has been created. Please log in.')
         return redirect ('/login')
     return render (request,"register.html")
 
@@ -166,22 +178,30 @@ def login(request):
 
 def login_check(request):
     if request.method =="POST":
-        email = request.POST['email']
+        email = request.POST['email'].strip().lower()
         password = request.POST['password']
 
-        user = UserRegister.objects.filter(email=email,password=password)
+        user = UserRegister.objects.filter(email=email).first()
 
-        if user:
+        if user and check_password(password, user.password):
             request.session['user'] = email   #!Session start
-            request.session['customer_name'] = user[0].name
+            request.session['customer_name'] = user.name
+            return redirect('/')
+        if user and user.password == password:
+            user.password = make_password(password)
+            user.save(update_fields=['password'])
+            request.session['user'] = email
+            request.session['customer_name'] = user.name
             return redirect('/')
         else:
+            messages.error(request, 'Invalid email or password.')
             return redirect('/login')
     else:
         return redirect ('/login')    
     
 def logout(request):
-    del request.session['user']
+    request.session.pop('user', None)
+    request.session.pop('customer_name', None)
     return redirect('/login')    
 
 
