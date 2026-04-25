@@ -23,5 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls), 
     path('', include('shop.urls')), 
 ]
+
+# Serve media files in development; in production, Cloudinary handles this
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

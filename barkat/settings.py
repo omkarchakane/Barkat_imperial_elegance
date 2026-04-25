@@ -157,19 +157,22 @@ import os as os_module
 USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
 
 if USE_CLOUDINARY:
-    # Configure django-cloudinary-storage for media uploads
+    # Use cloudinary for file uploads
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    
-    # Initialize Cloudinary - it will read CLOUDINARY_URL automatically
-    import cloudinary
-    cloudinary.config(secure=True)
-    
-    # Set MEDIA_URL - Cloudinary storage will override this with CDN URLs
     MEDIA_URL = '/media/'
+    
+    # Initialize Cloudinary SDK - it reads CLOUDINARY_URL from environment
+    import cloudinary
+    try:
+        cloudinary.config(secure=True)
+        print("[DEBUG] Cloudinary initialized successfully")
+    except Exception as e:
+        print(f"[ERROR] Failed to initialize Cloudinary: {e}")
 else:
-    # Local storage (for development)
+    # Local storage (for development and production)
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    print("[DEBUG] Using local file storage")
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
