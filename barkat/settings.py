@@ -152,9 +152,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files configuration
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Cloudinary Configuration for persistent media storage on Render
+import cloudinary
+
+USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
+
+if USE_CLOUDINARY:
+    # Initialize Cloudinary - reads CLOUDINARY_URL from environment
+    cloudinary.config(secure=True)
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    MEDIA_URL = ''  # Cloudinary generates full URLs automatically
+else:
+    # Local storage fallback
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
