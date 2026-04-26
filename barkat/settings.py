@@ -158,11 +158,18 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = str(BASE_DIR / 'staticfiles')
-# Use Path objects for better compatibility
 STATICFILES_DIRS = [
     str(BASE_DIR / 'static'),
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Use simple storage that works reliably
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# Explicitly set finders to ensure they work
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 # Media files configuration
 CLOUDINARY_URL = config('CLOUDINARY_URL', default='').strip()
