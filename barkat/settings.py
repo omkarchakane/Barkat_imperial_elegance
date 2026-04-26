@@ -152,33 +152,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Cloudinary Configuration for persistent media storage on Render
-import cloudinary
-from urllib.parse import urlparse
-
-USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
-cloudinary_url = config('CLOUDINARY_URL', default='')
-
-if USE_CLOUDINARY and cloudinary_url:
-    # Parse CLOUDINARY_URL to extract cloud name
-    parsed = urlparse(cloudinary_url)
-    cloud_name = parsed.hostname or ''
-    
-    # Initialize Cloudinary - reads CLOUDINARY_URL from environment
-    cloudinary.config(secure=True)
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    MEDIA_URL = ''  # Cloudinary generates full URLs automatically
-    
-    # Explicit Cloudinary storage config
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': cloud_name,
-        'FOLDER': 'barkat-imperial-elegance/',
-    }
-else:
-    # Local storage fallback
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Media files configuration - using local storage
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
