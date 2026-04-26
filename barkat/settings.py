@@ -3,15 +3,19 @@ from pathlib import Path
 
 import dj_database_url
 import cloudinary
+import cloudinary.api
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Configure Cloudinary
+# Configure Cloudinary - this MUST happen before Django setup
 cloudinary_url = config('CLOUDINARY_URL', default='').strip()
 if cloudinary_url:
+    # Parse and configure Cloudinary
     cloudinary.config(secure=True, api_quiet=True)
+    # Explicitly set storage to Cloudinary when URL is present
+    os.environ['DEFAULT_FILE_STORAGE'] = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 SECRET_KEY = config(
     'SECRET_KEY',
@@ -162,17 +166,22 @@ if not DEBUG:
 else:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-# Media files configuration - using Cloudinary for production, local for development
+# Media files configuration
 CLOUDINARY_URL = config('CLOUDINARY_URL', default='').strip()
 
+# Always try to use Cloudinary if URL is configured, fallback to local storage
 if CLOUDINARY_URL:
-    # Use Cloudinary storage when CLOUDINARY_URL is configured
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    MEDIA_URL = '/media/'
+    try:
+        from cloudinary_storage.storage import MediaCloudinaryStorage
+        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    except ImportError:
+        DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+        MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
-    # Fall back to local storage for development
-    MEDIA_URL = '/media/'
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
