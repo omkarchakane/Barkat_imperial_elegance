@@ -169,14 +169,9 @@ else:
 # Media files configuration
 CLOUDINARY_URL = config('CLOUDINARY_URL', default='').strip()
 
-# Always try to use Cloudinary if URL is configured, fallback to local storage
+# Explicit Cloudinary storage backend
 if CLOUDINARY_URL:
-    try:
-        from cloudinary_storage.storage import MediaCloudinaryStorage
-        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    except ImportError:
-        DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-        MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

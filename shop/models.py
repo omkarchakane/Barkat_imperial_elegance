@@ -1,8 +1,17 @@
 from django.db import models
+from django.conf import settings
+
+# Use Cloudinary storage if configured
+if settings.CLOUDINARY_URL:
+    from cloudinary_storage.storage import MediaCloudinaryStorage
+    storage = MediaCloudinaryStorage()
+else:
+    from django.core.files.storage import default_storage
+    storage = default_storage
 
 class ProductImage(models.Model):
     product = models.ForeignKey('Product', related_name='images', on_delete=models.CASCADE)
-    image = models.FileField(upload_to='products/')
+    image = models.FileField(upload_to='products/', storage=storage)
     
     def __str__(self):
         return f"Image for {self.product.name}"
@@ -10,7 +19,7 @@ class ProductImage(models.Model):
 class Product(models.Model):
     name= models.CharField(max_length=100)
     price = models.IntegerField()
-    image = models.FileField(upload_to='products/')
+    image = models.FileField(upload_to='products/', storage=storage)
     description =models.TextField()
     is_new_arrival = models.BooleanField(default=False)
     offer_text = models.CharField(max_length=100, blank=True, null=True)
@@ -28,7 +37,7 @@ class Product(models.Model):
 
 class OfferPoster(models.Model):
     title = models.CharField(max_length=150)
-    image = models.FileField(upload_to='posters/')
+    image = models.FileField(upload_to='posters/', storage=storage)
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -65,4 +74,4 @@ class UserRegister(models.Model):
     password = models.CharField(max_length=128)
 
     def __str__(self):
-        return self.email  
+        return self.email
