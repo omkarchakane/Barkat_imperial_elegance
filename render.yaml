@@ -23,7 +23,7 @@ services:
           name: barkat-db
           property: connectionString
       - key: USE_CLOUDINARY
-        value: false
+        value: true
       - key: CLOUDINARY_URL
         sync: false
 
