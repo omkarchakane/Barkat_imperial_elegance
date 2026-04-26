@@ -26,3 +26,7 @@ urlpatterns = [
 
 # Serve media files in production (temporary workaround for Render)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Serve static files (WhiteNoise handles this on production, but add as fallback)
+if settings.DEBUG or not settings.DEBUG:  # Always add for safety
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
