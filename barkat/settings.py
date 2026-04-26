@@ -2,10 +2,16 @@ import os
 from pathlib import Path
 
 import dj_database_url
+import cloudinary
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Configure Cloudinary
+cloudinary_url = config('CLOUDINARY_URL', default='').strip()
+if cloudinary_url:
+    cloudinary.config(secure=True, api_quiet=True)
 
 SECRET_KEY = config(
     'SECRET_KEY',
@@ -157,13 +163,14 @@ else:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Media files configuration - using Cloudinary for production, local for development
-USE_CLOUDINARY = get_bool('USE_CLOUDINARY', default=False)
+CLOUDINARY_URL = config('CLOUDINARY_URL', default='').strip()
 
-if USE_CLOUDINARY:
+if CLOUDINARY_URL:
+    # Use Cloudinary storage when CLOUDINARY_URL is configured
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     MEDIA_URL = '/media/'
-    # MEDIA_ROOT is not needed when using Cloudinary
 else:
+    # Fall back to local storage for development
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
