@@ -22,8 +22,6 @@ services:
         fromDatabase:
           name: barkat-db
           property: connectionString
-      - key: USE_CLOUDINARY
-        value: false
       - key: CLOUDINARY_URL
         sync: false
 
