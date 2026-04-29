@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.db import models
-from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist
+from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist,Order,OrderItem
 
 def home(request):
     search = request.GET.get('search')
@@ -187,3 +187,155 @@ def logout(request):
 
 def is_logged_in(request):
     return request.session.get('user') is not None
+
+
+def product_reviews(request, id):
+    product = Product.objects.get(id=id)
+    reviews = Review.objects.filter(product=product).order_by('-created_at')
+
+    avg_rating = 0
+    if reviews:
+        avg_rating = sum([r.rating for r in reviews]) / len(reviews)
+
+    return render(request, "product_reviews.html", {
+        'product': product,
+        'reviews': reviews,
+        'avg_rating': avg_rating
+    })
+
+
+def checkout_order_summary(request):
+    if not request.session.get('user'):
+        return redirect('/login')
+
+    items = Cart.objects.filter(username=request.session['user'])
+    total = 0
+
+    for i in items:
+        total += i.product.price * i.quantity
+
+    if not items:
+        return redirect('/cart')
+
+    return render(request, "checkout_order_summary.html", {
+        'items': items,
+        'total': total
+    })
+
+
+def checkout_shipping(request):
+    if not request.session.get('user'):
+        return redirect('/login')
+
+    items = Cart.objects.filter(username=request.session['user'])
+    total = 0
+
+    for i in items:
+        total += i.product.price * i.quantity
+
+    if not items:
+        return redirect('/cart')
+
+    if request.method == "POST":
+        request.session['checkout_data'] = {
+            'first_name': request.POST.get('first_name'),
+            'last_name': request.POST.get('last_name'),
+            'email': request.POST.get('email'),
+            'phone': request.POST.get('phone'),
+            'address': request.POST.get('address'),
+            'city': request.POST.get('city'),
+            'state': request.POST.get('state'),
+            'postal_code': request.POST.get('postal_code'),
+            'country': request.POST.get('country', 'India'),
+        }
+        return redirect('/checkout/payment/')
+
+    user = UserRegister.objects.filter(email=request.session.get('user')).first()
+    order = {
+        'first_name': user.name.split()[0] if user else '',
+        'last_name': user.name.split()[1] if user and len(user.name.split()) > 1 else '',
+        'email': request.session.get('user'),
+        'phone': '',
+        'address': '',
+        'city': '',
+        'state': '',
+        'postal_code': '',
+        'country': 'India',
+    }
+
+    return render(request, "checkout_shipping.html", {
+        'items': items,
+        'total': total,
+        'order': order
+    })
+
+
+def checkout_payment(request):
+    if not request.session.get('user'):
+        return redirect('/login')
+
+    items = Cart.objects.filter(username=request.session['user'])
+    total = 0
+
+    for i in items:
+        total += i.product.price * i.quantity
+
+    if not items:
+        return redirect('/cart')
+
+    if request.method == "POST":
+        payment_method = request.POST.get('payment_method', 'cod')
+        checkout_data = request.session.get('checkout_data', {})
+
+        order = Order.objects.create(
+            username=request.session['user'],
+            total_amount=total,
+            payment_method=payment_method,
+            first_name=checkout_data.get('first_name', ''),
+            last_name=checkout_data.get('last_name', ''),
+            email=checkout_data.get('email', ''),
+            phone=checkout_data.get('phone', ''),
+            address=checkout_data.get('address', ''),
+            city=checkout_data.get('city', ''),
+            state=checkout_data.get('state', ''),
+            postal_code=checkout_data.get('postal_code', ''),
+            country=checkout_data.get('country', 'India'),
+            status='confirmed'
+        )
+
+        for item in items:
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.price
+            )
+
+        items.delete()
+
+        if 'checkout_data' in request.session:
+            del request.session['checkout_data']
+
+        return redirect(f'/checkout/success/{order.id}/')
+
+    return render(request, "checkout_payment.html", {
+        'items': items,
+        'total': total
+    })
+
+
+def checkout_success(request, order_id):
+    if not request.session.get('user'):
+        return redirect('/login')
+
+    order = Order.objects.get(id=order_id)
+
+    if order.username != request.session['user']:
+        return redirect('/')
+
+    for item in order.items.all():
+        item.total = item.price * item.quantity
+
+    return render(request, "checkout_success.html", {
+        'order': order
+    })

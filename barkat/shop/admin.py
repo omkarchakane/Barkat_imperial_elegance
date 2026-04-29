@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product,Cart,Review,UserRegister,OfferPoster,ProductImage,Wishlist
+from .models import Product,Cart,Review,UserRegister,OfferPoster,ProductImage,Wishlist,Order,OrderItem
 
 # Register your models here.
 @admin.register(ProductImage)
@@ -45,3 +45,36 @@ class UserRegisterAdmin(admin.ModelAdmin):
 class OfferPosterAdmin(admin.ModelAdmin):
     list_display = ('title','active')
     list_filter = ('active',)
+
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ('product', 'quantity', 'price')
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'username', 'order_date', 'total_amount', 'status', 'payment_method')
+    list_filter = ('status', 'payment_method', 'order_date')
+    search_fields = ('username', 'email', 'phone')
+    readonly_fields = ('order_date',)
+    inlines = [OrderItemInline]
+
+    fieldsets = (
+        ('Order Info', {
+            'fields': ('username', 'order_date', 'total_amount', 'status', 'payment_method')
+        }),
+        ('Customer Details', {
+            'fields': ('first_name', 'last_name', 'email', 'phone')
+        }),
+        ('Shipping Address', {
+            'fields': ('address', 'city', 'state', 'postal_code', 'country')
+        }),
+    )
+
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product', 'quantity', 'price')
+    search_fields = ('order__id', 'product__name')
