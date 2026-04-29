@@ -2,8 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.shortcuts import render,redirect
-from django.db import models
+from django.db import DatabaseError, models
+from django.shortcuts import get_object_or_404, render,redirect
 from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist,Order,OrderItem
 
 def home(request):
@@ -47,12 +47,16 @@ def get_product_review_state(username, product):
     has_reviewed = False
 
     if username:
-        has_delivered_order = OrderItem.objects.filter(
-            order__username=username,
-            order__status='delivered',
-            product=product
-        ).exists()
-        has_reviewed = Review.objects.filter(username=username, product=product).exists()
+        try:
+            has_delivered_order = OrderItem.objects.filter(
+                order__username=username,
+                order__status='delivered',
+                product=product
+            ).exists()
+            has_reviewed = Review.objects.filter(username=username, product=product).exists()
+        except DatabaseError:
+            has_delivered_order = False
+            has_reviewed = False
 
     return {
         'has_delivered_order': has_delivered_order,
@@ -96,7 +100,7 @@ def create_product_review(request, product):
     messages.success(request, 'Thank you for reviewing this product.')
 
 def product(request, id):
-    product =Product.objects.get(id=id)  #! show the single data 
+    product = get_object_or_404(Product, id=id)  #! show the single data 
     reviews = Review.objects.filter(product=product).order_by('-created_at')
     
     # Calculate average rating
@@ -131,7 +135,7 @@ def product(request, id):
 
 # Quick view for product modal
 def quick_view(request, id):
-    product = Product.objects.get(id=id)
+    product = get_object_or_404(Product, id=id)
     reviews = Review.objects.filter(product=product)
     avg_rating = sum([r.rating for r in reviews]) / len(reviews) if reviews else 0
     
@@ -146,7 +150,7 @@ def add_wishlist(request, id):
     if not request.session.get('user'):
         return redirect('/login')
     
-    product = Product.objects.get(id=id)
+    product = get_object_or_404(Product, id=id)
     Wishlist.objects.get_or_create(username=request.session['user'], product=product)
     return redirect('/')
 
