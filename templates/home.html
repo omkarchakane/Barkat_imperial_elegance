@@ -3,38 +3,66 @@
 
 {% block content %}
 
+<!-- GSAP ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="hero-section{% if posters %} hero-intro-overlay{% endif %}">
     <div class="hero-overlay"></div>
-    <div class="hero-content animate-fade-in">
+    <div class="hero-content" id="heroContent">
         <img src="{% static 'logo/Brand_Logo.png' %}" alt="Barkat Imperial Elegance" class="hero-logo">
-        <!-- <h1 class="hero-title">Imperial Elegance</h1> -->
-        <p class="hero-subtitle">Rediscover the timeless beauty of authentic sarees</p>
-        <a href="#collection" class="btn btn-imperial">View Collection</a>
+        <p class="hero-subtitle reveal">Rediscover the timeless beauty of authentic sarees</p>
+        <a href="#collection" class="btn btn-imperial scroll-to-collection reveal">View Collection</a>
     </div>
 </section>
 
+<!-- Full Page Carousel Section for Offer Posters -->
+{% if posters %}
+<section class="full-carousel-section" id="fullCarouselSection">
+    <div class="carousel-container-full">
+
+        <div class="carousel-wrapper-full">
+            {% for poster in posters %}
+            <div class="carousel-item-full{% if forloop.first %} active{% endif %}">
+                <img src="{{ poster.image.url }}" class="carousel-poster-image">
+
+                <div class="carousel-overlay"></div>
+
+                <div class="carousel-content">
+                    <a href="#collection" class="btn btn-light btn-lg">Shop Now</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Progress Bars -->
+        <div class="carousel-progress">
+            {% for poster in posters %}
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endif %}
+
 <!-- New Arrivals Carousel Section -->
-{% if posters or new_arrivals %}
+{% if new_arrivals %}
 <section class="carousel-section">
     <div class="container-fluid">
-        <h2 class="carousel-title">Exclusive Offers</h2>
+        <h2 class="carousel-title">New Arrivals</h2>
         <div class="carousel-container">
             <button class="carousel-btn carousel-btn-prev" id="carouselPrev">
                 <i class="bi bi-chevron-left"></i>
             </button>
 
             <div class="carousel-wrapper">
-                {% for poster in posters %}
-                <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                    <div class="carousel-poster-card">
-                        <img src="{{ poster.image.url }}" alt="{{ poster.title }}">
-                        <div class="poster-text">{{ poster.title }}</div>
-                    </div>
-                </div>
-                {% endfor %}
                 {% for p in new_arrivals %}
-                <div class="carousel-item{% if not posters and forloop.first %} active{% endif %}">
+                <div class="carousel-item{% if forloop.first %} active{% endif %}">
                     <div class="carousel-product-card">
                         <div class="carousel-img-wrapper">
                             {% if p.image %}
@@ -47,11 +75,15 @@
                             {% if p.offer_text %}
                             <div class="offer-badge">{{ p.offer_text }}</div>
                             {% endif %}
+                            <a href="/product/{{ p.id }}" class="carousel-visit-now">Visit Now</a>
                         </div>
                         <div class="carousel-card-body">
                             <h5 class="carousel-card-title">{{ p.name }}</h5>
                             <p class="carousel-price">₹ {{ p.price }}</p>
-                            <a href="/product/{{ p.id }}" class="carousel-btn-view">View</a>
+                            <div class="carousel-btn-group">
+                                <a href="/product/{{ p.id }}" class="carousel-btn-view">View Details</a>
+                                <a href="/buy_now/{{ p.id }}/" class="carousel-btn-buy">Buy Now</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -72,8 +104,8 @@
     <!-- Search Section -->
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <h2 class="section-title">Exclusive Collection</h2>
-            <form method="get" class="search-container position-relative">
+            <h2 class="section-title reveal">Exclusive Collection</h2>
+            <form method="get" class="search-container position-relative reveal">
                 <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                 <input type="text" name="search" class="form-control form-control-imperial ps-5" 
                        placeholder="Search for perfection..." value="{{ request.GET.search|default:'' }}">
@@ -84,7 +116,7 @@
     <!-- Products Grid -->
     <div class="row g-4">
         {% for p in products %}
-        <div class="col-md-4">
+        <div class="col-md-4 product-reveal">
             <div class="product-card">
                 <div class="product-img-wrapper">
                     {% if p.image %}
@@ -130,9 +162,14 @@
                         <h5 class="card-title">{{ p.name }}</h5>
                         <p class="price">₹ {{ p.price }}</p>
                     </div>
-                    <a href="/product/{{ p.id }}" class="btn btn-add-cart">
-                        <i class="bi bi-eye me-2"></i> View Details
-                    </a>
+                    <div class="product-card-buttons">
+                        <a href="/product/{{ p.id }}" class="btn btn-add-cart">
+                            <i class="bi bi-eye me-2"></i> View Details
+                        </a>
+                        <a href="/buy_now/{{ p.id }}/" class="btn btn-add-cart" title="Buy Now">
+                            <i class="bi bi-bag-check me-2"></i> Buy Now
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,49 +201,268 @@
 </div>
 
 <script>
-// fade/slide carousel behavior
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
+
+// Initialize reveal animation - wrap text in spans for animation
+function revealToSpan() {
+    document.querySelectorAll(".reveal").forEach(function (elem) {
+        if (elem.tagName === "IMG") return;
+
+        let parent = document.createElement("span");
+        let child = document.createElement("span");
+
+        parent.classList.add("parent");
+        child.classList.add("child");
+
+        child.innerHTML = elem.innerHTML;
+        parent.appendChild(child);
+
+        elem.innerHTML = "";
+        elem.appendChild(parent);
+    });
+}
+
+// Main animation sequence: Hero fades from bottom, then carousel slides in
+function animateHomepage() {
+    const heroSection = document.querySelector(".hero-section");
+    const heroOverlay = document.querySelector(".hero-overlay");
+    const heroContent = document.querySelector("#heroContent");
+    const posterSection = document.querySelector("#fullCarouselSection");
+    let tl = gsap.timeline();
+
+    gsap.set(heroSection, {
+        clipPath: "inset(0% 0% 0% 0%)",
+        willChange: "clip-path, opacity"
+    });
+    gsap.set(heroContent, { willChange: "transform, opacity" });
+    
+    tl.from(".hero-logo", {
+        y: 24,
+        scale: 0.96,
+        opacity: 0,
+        duration: 1,
+        ease: "power3.out"
+    })
+    .from("#heroContent .parent .child", {
+        yPercent: 100,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power3.out"
+    }, "-=0.35");
+
+    if (!posterSection) return;
+
+    tl.to(heroContent, {
+        y: -72,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power3.in"
+    }, "+=0.55")
+    .to(heroOverlay, {
+        opacity: 0,
+        duration: 0.65,
+        ease: "power2.inOut"
+    }, "<")
+    .to(heroSection, {
+        clipPath: "inset(0% 0% 100% 0%)",
+        opacity: 0.94,
+        duration: 0.95,
+        ease: "power3.inOut",
+        onComplete: function () {
+            heroSection.classList.add("hero-section-hidden");
+            gsap.set([heroSection, heroContent], { clearProps: "willChange" });
+        }
+    }, "-=0.1");
+}
+
+// Full Carousel for Offer Posters - Netflix style with progress bars
+function initNetflixCarousel() {
+    const items = document.querySelectorAll('.carousel-item-full');
+    const fills = document.querySelectorAll('.progress-fill');
+    const container = document.querySelector('.carousel-container-full');
+
+    if (!items.length || !container) return;
+
+    let current = 0;
+    let duration = 5000;
+    let timer;
+
+    function resetProgress() {
+        fills.forEach(f => f.style.width = '0%');
+    }
+
+    function animateProgress(index) {
+        if (!fills[index]) return;
+        gsap.to(fills[index], {
+            width: "100%",
+            duration: duration / 1000,
+            ease: "linear"
+        });
+    }
+
+    function show(index) {
+        index = (index + items.length) % items.length;
+        if (index === current) return;
+        const previous = current;
+        const direction = index > current ? 1 : -1;
+
+        // Slide out current item to the left
+        gsap.killTweensOf([items[previous], items[index]]);
+        gsap.set(items[previous], { zIndex: 3 });
+        gsap.set(items[index], { zIndex: 4 });
+        items[index].classList.add('active');
+
+        gsap.to(items[previous], {
+            opacity: 0,
+            xPercent: -100 * direction,
+            duration: 0.8,
+            ease: "power2.inOut",
+            onComplete: () => {
+                items[previous].classList.remove('active');
+                gsap.set(items[previous], { clearProps: "opacity,transform,zIndex" });
+            }
+        });
+
+        current = index;
+
+        // Slide in next item from the right
+        gsap.fromTo(items[current],
+            { opacity: 0, xPercent: 100 * direction },
+            {
+                opacity: 1,
+                xPercent: 0,
+                duration: 0.8,
+                ease: "power2.inOut",
+                onComplete: () => gsap.set(items[current], { clearProps: "opacity,transform,zIndex" })
+            }
+        );
+
+        resetProgress();
+        animateProgress(current);
+
+        restartAuto();
+    }
+
+    function next() {
+        show(current + 1);
+    }
+
+    function restartAuto() {
+        clearInterval(timer);
+        timer = setInterval(next, duration);
+    }
+
+    // Swipe Support
+    let startX = 0;
+
+    container.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+
+    container.addEventListener('touchend', e => {
+            let endX = e.changedTouches[0].clientX;
+            if (startX - endX > 50) next();
+            if (endX - startX > 50) show(current - 1);
+        });
+
+    // Mouse Drag
+    let isDown = false;
+
+    container.addEventListener('mousedown', e => {
+            isDown = true;
+            startX = e.clientX;
+        });
+
+    document.addEventListener('mouseup', e => {
+        if (!isDown) return;
+        isDown = false;
+
+        let diff = e.clientX - startX;
+        if (diff > 50) show(current - 1);
+        if (diff < -50) next();
+    });
+
+    // Init
+    animateProgress(0);
+    if (items.length > 1) {
+        timer = setInterval(next, duration);
+    }
+}
+
+// Regular Carousel for New Arrivals
 function initCarousel() {
     const items = document.querySelectorAll('.carousel-section .carousel-item');
     if (!items.length) return;
     let current = 0;
+    
     function show(index) {
         if (index === current) return;
-        // slide out current
-        const prev = items[current];
-        prev.classList.add('slide-out');
-        prev.classList.remove('active');
-        // activate next
-        current = index;
-        const nextItem = items[current];
-        nextItem.classList.add('active');
-        nextItem.classList.remove('slide-out');
+        gsap.to(items[current], {
+            opacity: 0,
+            duration: 0.5,
+            ease: "power2.inOut"
+        });
+        items[current].classList.remove('active');
+        
+        current = (index + items.length) % items.length;
+        items[current].classList.add('active');
+        gsap.fromTo(items[current], 
+            { opacity: 0 },
+            { opacity: 1, duration: 0.5, ease: "power2.inOut" }
+        );
     }
+    
     function next() {
-        show((current + 1) % items.length);
+        show(current + 1);
     }
+    
     function prev() {
-        show((current - 1 + items.length) % items.length);
+        show(current - 1);
     }
-    document.getElementById('carouselNext').addEventListener('click', next);
-    document.getElementById('carouselPrev').addEventListener('click', prev);
-    // auto advance every 5 seconds
+    
+    document.getElementById('carouselNext')?.addEventListener('click', next);
+    document.getElementById('carouselPrev')?.addEventListener('click', prev);
+    
     setInterval(next, 5000);
 }
-document.addEventListener('DOMContentLoaded', initCarousel);
 
-// Quick View Modal
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup reveal animation
+    revealToSpan();
+    
+    // Start main animation sequence
+    animateHomepage();
+    
+    // Initialize carousels
+    initNetflixCarousel();
+    initCarousel();
+    
+    // Smooth scroll for Shop Now buttons
+    document.querySelectorAll('.carousel-content .btn, .scroll-to-collection').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector('#collection');
+            if (target) {
+                gsap.to(window, {
+                    duration: 1,
+                    scrollTo: target,
+                    ease: "power3.inOut"
+                });
+            }
+        });
+    });
+    
+    // Quick View Modal
     const quickViewModal = document.getElementById('quickViewModal');
     const quickViewContent = document.getElementById('quickViewContent');
     
-    quickViewModal.addEventListener('show.bs.modal', function(event) {
+    quickViewModal?.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         const productId = button.getAttribute('data-product-id');
         
-        // Show loading
         quickViewContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
         
-        // Fetch quick view content
         fetch(`/quick_view/${productId}/`)
             .then(response => response.text())
             .then(html => {

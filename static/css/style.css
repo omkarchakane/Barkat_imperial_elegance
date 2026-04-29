@@ -14,7 +14,7 @@
     --light-bg: #FAF9F6;
     /* Off-white / Cream */
     --white: #ffffff;
-    --glass-bg: rgba(74, 4, 4, 0.95);
+    --glass-bg: rgba(74, 4, 4, 0.58);
 }
 
 body {
@@ -25,6 +25,27 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+}
+
+/* CRITICAL FIX: Force carousel items to stack absolutely */
+.full-carousel-section {
+    position: relative !important;
+}
+
+.carousel-container-full,
+.carousel-wrapper-full {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.carousel-item-full {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 h1,
@@ -39,10 +60,15 @@ h6,
 
 /* Navbar */
 .navbar-imperial {
-    background-color: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
+        var(--glass-bg);
+    backdrop-filter: saturate(155%);
+    -webkit-backdrop-filter: saturate(155%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18);
     padding: 1rem 0;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .navbar-imperial .navbar-brand {
@@ -87,6 +113,22 @@ h6,
     justify-content: center;
 }
 
+.hero-section.hero-intro-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1020;
+    margin-top: 0;
+    min-height: 100vh;
+    pointer-events: auto;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: clip-path, opacity;
+}
+
+.hero-section-hidden {
+    display: none !important;
+}
+
 @keyframes gradientShift {
     0% {
         background-position: 0% 50%;
@@ -123,10 +165,11 @@ h6,
 }
 
 .hero-logo {
+    display: block;
     width: 100%;
     max-width: 350px;
     height: auto;
-    margin-bottom: 2rem;
+    margin: 0 auto 2rem;
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
     transition: transform 0.3s ease;
 }
@@ -958,5 +1001,567 @@ footer .bi {
     
     .carousel-track {
         gap: 1rem;
+    }
+}
+
+/* Reveal Animation Styles */
+.parent {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+}
+
+.child {
+    display: block;
+}
+
+.reveal {
+    word-break: break-word;
+}
+
+/* Full Page Carousel - Enhanced Responsive */
+.full-carousel-section {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 520px;
+    overflow: hidden;
+    background: #000;
+}
+
+.carousel-container-full {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.carousel-wrapper-full {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.carousel-item-full {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    display: block !important;
+
+    opacity: 0;
+    transform: translateX(100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.carousel-item-full.active {
+    opacity: 1;
+    transform: translateX(0);
+    z-index: 2;
+    pointer-events: auto;
+}
+
+.carousel-poster-image {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Overlay */
+.carousel-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    z-index: 3;
+}
+
+/* Content */
+.carousel-content {
+    position: absolute;
+    bottom: 15%;
+    left: 8%;
+    z-index: 4;
+}
+
+/* Progress Bars */
+.carousel-progress {
+    position: absolute;
+    bottom: 20px;
+    left: 5%;
+    right: 5%;
+    display: flex;
+    gap: 10px;
+    z-index: 5;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: #fff;
+}
+
+@media (max-width: 768px) {
+    .full-carousel-section {
+        height: 70vh;
+        min-height: 420px;
+    }
+
+    .carousel-content {
+        bottom: 12%;
+        left: 1rem;
+    }
+}
+
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: var(--white);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    font-size: 1.5rem;
+}
+
+.carousel-control:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.carousel-control-prev {
+    left: 30px;
+}
+
+.carousel-control-next {
+    right: 30px;
+}
+
+.carousel-indicators-full {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    gap: 12px;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background: var(--accent-color);
+    width: 30px;
+    border-radius: 6px;
+}
+
+/* Product Card Buttons */
+.product-card-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    align-items: stretch;
+}
+
+.btn-add-cart {
+    flex: 1;
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 10px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-add-cart:hover {
+    background: var(--accent-color);
+    color: var(--primary-color);
+}
+
+.btn-buy-now {
+    width: 45px;
+    height: auto;
+    padding: 10px;
+    background: linear-gradient(135deg, var(--accent-color) 0%, #F8D876 100%);
+    color: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.btn-buy-now:hover {
+    background: linear-gradient(135deg, #F8D876 0%, var(--accent-color) 100%);
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(212, 165, 116, 0.5);
+    color: var(--primary-color);
+}
+
+.carousel-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.carousel-btn-view,
+.carousel-btn-buy {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.carousel-btn-view {
+    background: #f0f0f0;
+    color: var(--primary-color);
+    border: 1px solid #ddd;
+}
+
+.carousel-btn-view:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.carousel-btn-buy {
+    background: var(--accent-color);
+    color: var(--primary-color);
+    border: none;
+    font-weight: 600;
+}
+
+.carousel-btn-buy:hover {
+    background: #F8D876;
+    color: var(--white);
+}
+
+@media (max-width: 768px) {
+    .carousel-control {
+        width: 40px;
+        height: 40px;
+    }
+
+    .carousel-control-prev {
+        left: 10px;
+    }
+
+    .carousel-control-next {
+        right: 10px;
+    }
+}
+
+/* Requested navbar and product CTA refinements */
+:root {
+    --glass-bg: rgba(74, 4, 4, 0.26);
+}
+
+.navbar-imperial {
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03)),
+        rgba(74, 4, 4, 0.24);
+    backdrop-filter: blur(14px) saturate(145%);
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
+    border-bottom-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.16);
+}
+
+.navbar-toggler-imperial:focus {
+    box-shadow: 0 0 0 0.12rem rgba(212, 175, 55, 0.45);
+}
+
+.product-card-buttons .btn-add-cart,
+.carousel-btn-view,
+.carousel-btn-buy {
+    min-height: 44px;
+    background: var(--primary-color);
+    color: var(--white);
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.product-card-buttons .btn-add-cart:hover,
+.carousel-btn-view:hover,
+.carousel-btn-buy:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.28);
+}
+
+@media (max-width: 991.98px) {
+    .navbar-imperial {
+        padding: 0.75rem 0;
+    }
+
+    .navbar-imperial .container {
+        position: relative;
+        justify-content: flex-end;
+    }
+
+    .navbar-imperial .navbar-collapse {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0.75rem;
+        left: 0.75rem;
+        background: rgba(74, 4, 4, 0.82);
+        backdrop-filter: blur(16px) saturate(150%);
+        -webkit-backdrop-filter: blur(16px) saturate(150%);
+        border: 1px solid rgba(212, 175, 55, 0.26);
+        border-radius: 8px;
+        padding: 0.7rem;
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+    }
+
+    .navbar-imperial .navbar-nav {
+        align-items: stretch !important;
+        gap: 0.25rem;
+    }
+
+    .navbar-imperial .nav-link {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.85rem 1rem;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .navbar-imperial .nav-link:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .navbar-imperial .badge-gold {
+        position: static !important;
+        transform: none !important;
+        margin-left: 0.5rem;
+    }
+
+    .product-card-buttons {
+        flex-direction: column;
+    }
+}
+
+/* Navbar logo and new-arrival hover CTA */
+.navbar-imperial .navbar-brand-logo {
+    display: inline-flex !important;
+    align-items: center;
+    margin-right: 1.5rem;
+    padding: 0;
+    line-height: 1;
+}
+
+.navbar-logo {
+    display: block;
+    width: 58px;
+    height: 46px;
+    object-fit: contain;
+    border-radius: 4px;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.28));
+}
+
+.carousel-img-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 1, 1, 0.32);
+    opacity: 0;
+    transition: opacity 0.28s ease;
+    pointer-events: none;
+}
+
+.carousel-visit-now {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 12;
+    transform: translate(-50%, calc(-50% + 12px));
+    opacity: 0;
+    pointer-events: none;
+    min-width: 140px;
+    padding: 11px 18px;
+    border-radius: 4px;
+    background: var(--primary-color);
+    color: var(--white);
+    border: 1px solid rgba(212, 175, 55, 0.9);
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+    transition: opacity 0.28s ease, transform 0.28s ease, background 0.28s ease, color 0.28s ease;
+}
+
+.carousel-product-card:hover .carousel-img-wrapper::after,
+.carousel-img-wrapper:hover::after,
+.carousel-product-card:focus-within .carousel-img-wrapper::after {
+    opacity: 1;
+}
+
+.carousel-product-card:hover .carousel-visit-now,
+.carousel-img-wrapper:hover .carousel-visit-now,
+.carousel-product-card:focus-within .carousel-visit-now {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+}
+
+.carousel-visit-now:hover {
+    background: var(--accent-color);
+    color: var(--primary-color);
+}
+
+@media (max-width: 991.98px) {
+    .navbar-imperial .container {
+        justify-content: space-between;
+    }
+
+    .navbar-logo {
+        width: 52px;
+        height: 42px;
+    }
+}
+
+/* Final visibility fix for navbar brand and New Arrivals CTA */
+.navbar-imperial .navbar-brand.navbar-brand-logo {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px;
+    color: var(--accent-color) !important;
+    text-decoration: none;
+    min-width: max-content;
+}
+
+.navbar-imperial .navbar-brand-text {
+    display: inline-block;
+    font-family: 'Playfair Display', serif;
+    color: var(--accent-color);
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.6px;
+    text-transform: none;
+}
+
+.navbar-imperial .navbar-logo {
+    display: block !important;
+    width: 46px;
+    height: 46px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+    border: 1px solid rgba(212, 175, 55, 0.55);
+    background: #2c0202;
+}
+
+.carousel-img-wrapper .carousel-visit-now {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0 !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 40;
+    transform: translate(-50%, calc(-50% + 12px));
+}
+
+.carousel-product-card:hover .carousel-visit-now,
+.carousel-img-wrapper:hover .carousel-visit-now,
+.carousel-product-card:focus-within .carousel-visit-now {
+    visibility: visible;
+    opacity: 1 !important;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+}
+
+/* Barkat wordmark image in navbar */
+.navbar-imperial .navbar-brand.navbar-brand-logo {
+    gap: 12px;
+    padding: 4px 10px 4px 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.24);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+.navbar-imperial .navbar-logo {
+    width: 42px;
+    height: 42px;
+}
+
+.navbar-wordmark {
+    display: block;
+    width: 112px;
+    height: 34px;
+    object-fit: cover;
+    object-position: center 52%;
+    border-radius: 999px;
+    filter: saturate(1.12) contrast(1.06) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.28));
+}
+
+@media (max-width: 480px) {
+    .navbar-wordmark {
+        width: 92px;
+        height: 30px;
+    }
+
+    .navbar-imperial .navbar-logo {
+        width: 38px;
+        height: 38px;
     }
 }

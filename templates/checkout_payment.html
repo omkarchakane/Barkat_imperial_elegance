@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container" style="margin-top: 120px;">
+    <!-- Progress Indicator -->
+    <div class="progress-steps mb-5">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-label">Order Summary</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-label">Shipping & Contact</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <div class="step-number">3</div>
+            <div class="step-label">Payment</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">Select Payment Method</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Payment Methods -->
+                        <div class="payment-methods">
+                            <!-- Cash on Delivery -->
+                            <div class="payment-option mb-3">
+                                <input type="radio" id="cod" name="payment_method" value="cod" class="form-check-input" checked>
+                                <label for="cod" class="payment-label">
+                                    <div class="payment-header">
+                                        <i class="bi bi-wallet-fill text-success" style="font-size: 1.5rem;"></i>
+                                        <span class="payment-title">Cash on Delivery (COD)</span>
+                                    </div>
+                                    <div class="payment-description">
+                                        Pay when your order is delivered. No additional charges.
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- UPI -->
+                            <div class="payment-option mb-3">
+                                <input type="radio" id="upi" name="payment_method" value="upi" class="form-check-input">
+                                <label for="upi" class="payment-label">
+                                    <div class="payment-header">
+                                        <i class="bi bi-phone text-primary" style="font-size: 1.5rem;"></i>
+                                        <span class="payment-title">UPI</span>
+                                    </div>
+                                    <div class="payment-description">
+                                        Pay securely using your UPI app (Google Pay, PhonePe, PayTM)
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- PhonePay -->
+                            <div class="payment-option mb-3">
+                                <input type="radio" id="phonepay" name="payment_method" value="phonepay" class="form-check-input">
+                                <label for="phonepay" class="payment-label">
+                                    <div class="payment-header">
+                                        <i class="bi bi-square-fill" style="font-size: 1.5rem; color: #5f27cd;"></i>
+                                        <span class="payment-title">PhonePay</span>
+                                    </div>
+                                    <div class="payment-description">
+                                        Fast, secure payment through PhonePay app
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Google Pay -->
+                            <div class="payment-option">
+                                <input type="radio" id="googlepay" name="payment_method" value="googlepay" class="form-check-input">
+                                <label for="googlepay" class="payment-label">
+                                    <div class="payment-header">
+                                        <i class="bi bi-google text-danger" style="font-size: 1.5rem;"></i>
+                                        <span class="payment-title">Google Pay</span>
+                                    </div>
+                                    <div class="payment-description">
+                                        Securely pay using Google Pay
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Secure Payment:</strong> Your payment information is encrypted and secure. We never store your card details.
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <a href="/checkout/shipping/" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg flex-grow-1">
+                                <i class="bi bi-shield-check me-2"></i> Complete Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 120px;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Order Items Summary -->
+                    <div class="mb-3" style="max-height: 300px; overflow-y: auto;">
+                        {% for item in items %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <div>
+                                <small class="text-muted">{{ item.product.name }}</small><br>
+                                <small>x {{ item.quantity }}</small>
+                            </div>
+                            <small class="fw-bold">₹ {% widthratio item.product.price 1 item.quantity %}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr>
+
+                    <!-- Totals -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>₹ {{ total }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Shipping:</span>
+                        <span class="text-success">FREE</span>
+                    </div>
+                    <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-2">
+                        <span>Total:</span>
+                        <span class="text-success">₹ {{ total }}</span>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="alert alert-light mt-3 p-2">
+                        <small class="text-muted">
+                            <i class="bi bi-truck me-1"></i>
+                            Expected delivery: 5-7 business days
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.step.active .step-number {
+    background: #d4a574;
+    color: white;
+    border-color: #d4a574;
+}
+
+.step-label {
+    font-size: 0.9rem;
+    color: #666;
+    min-width: 80px;
+}
+
+.step.active .step-label {
+    color: #d4a574;
+    font-weight: 600;
+}
+
+.step-line {
+    height: 2px;
+    width: 50px;
+    background: #ddd;
+    margin: 0 10px;
+}
+
+.step-line.active {
+    background: #d4a574;
+}
+
+.sticky-top {
+    top: 120px;
+}
+
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.payment-option {
+    position: relative;
+}
+
+.payment-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.payment-label {
+    display: block;
+    padding: 1.5rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.payment-option input[type="radio"]:checked + .payment-label {
+    border-color: #d4a574;
+    background: #faf6f1;
+    box-shadow: 0 0 10px rgba(212, 165, 116, 0.1);
+}
+
+.payment-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.payment-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+}
+
+.payment-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-left: 36px;
+}
+
+@media (max-width: 768px) {
+    .progress-steps {
+        gap: 10px;
+    }
+
+    .step-line {
+        width: 30px;
+    }
+}
+</style>
+
+{% endblock %}

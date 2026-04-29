@@ -75,3 +75,50 @@ class UserRegister(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class Order(models.Model):
+    ORDER_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    PAYMENT_METHOD_CHOICES = [
+        ('cod', 'Cash on Delivery'),
+        ('upi', 'UPI'),
+        ('phonepay', 'PhonePay'),
+        ('googlepay', 'Google Pay'),
+    ]
+    
+    username = models.CharField(max_length=100)
+    order_date = models.DateTimeField(auto_now_add=True)
+    total_amount = models.IntegerField()
+    status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='pending')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    
+    # Shipping Details
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=10)
+    country = models.CharField(max_length=100, default='India')
+    
+    def __str__(self):
+        return f"Order #{self.id} - {self.username}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    price = models.IntegerField()  # Price at time of order
+    
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
