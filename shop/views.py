@@ -219,9 +219,14 @@ def register(request):
         name = request.POST['name'].strip()
         email = request.POST['email'].strip().lower()
         password = request.POST['password']
+        confirm_password = request.POST.get('confirm_password', '')
 
         if UserRegister.objects.filter(email=email).exists():
             messages.error(request, 'An account with this email already exists.')
+            return redirect('/register')
+
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
             return redirect('/register')
 
         try:
@@ -387,40 +392,51 @@ def checkout_payment(request):
         payment_method = request.POST.get('payment_method', 'cod')
         checkout_data = request.session.get('checkout_data', {})
         
-        # Create Order
-        order = Order.objects.create(
-            username=request.session['user'],
-            total_amount=total,
-            payment_method=payment_method,
-            first_name=checkout_data.get('first_name', ''),
-            last_name=checkout_data.get('last_name', ''),
-            email=checkout_data.get('email', ''),
-            phone=checkout_data.get('phone', ''),
-            address=checkout_data.get('address', ''),
-            city=checkout_data.get('city', ''),
-            state=checkout_data.get('state', ''),
-            postal_code=checkout_data.get('postal_code', ''),
-            country=checkout_data.get('country', 'India'),
-            status='confirmed'
-        )
+        # Validate checkout data exists
+        if not checkout_data or not checkout_data.get('address'):
+            messages.error(request, 'Please complete the shipping details first.')
+            return redirect('/checkout/shipping/')
         
-        # Create Order Items
-        for item in items:
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                quantity=item.quantity,
-                price=item.product.price
+        try:
+            # Create Order
+            order = Order.objects.create(
+                username=request.session['user'],
+                total_amount=total,
+                payment_method=payment_method,
+                first_name=checkout_data.get('first_name', ''),
+                last_name=checkout_data.get('last_name', ''),
+                email=checkout_data.get('email', ''),
+                phone=checkout_data.get('phone', ''),
+                address=checkout_data.get('address', ''),
+                city=checkout_data.get('city', ''),
+                state=checkout_data.get('state', ''),
+                postal_code=checkout_data.get('postal_code', ''),
+                country=checkout_data.get('country', 'India'),
+                status='confirmed'
             )
-        
-        # Clear cart
-        items.delete()
-        
-        # Clear session data
-        if 'checkout_data' in request.session:
-            del request.session['checkout_data']
-        
-        return redirect(f'/checkout/success/{order.id}/')
+            
+            # Create Order Items
+            for item in items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity,
+                    price=item.product.price
+                )
+            
+            # Clear cart
+            items.delete()
+            
+            # Clear session data
+            if 'checkout_data' in request.session:
+                del request.session['checkout_data']
+            
+            request.session.modified = True
+            
+            return redirect(f'/checkout/success/{order.id}/')
+        except Exception as e:
+            messages.error(request, 'An error occurred while processing your order. Please try again.')
+            return redirect('/checkout/shipping/')
     
     return render(request, "checkout_payment.html", {
         'items': items,
@@ -433,10 +449,15 @@ def checkout_success(request, order_id):
     if not request.session.get('user'):
         return redirect('/login')
     
-    order = Order.objects.get(id=order_id)
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found.')
+        return redirect('/')
     
     # Verify order belongs to logged-in user
     if order.username != request.session['user']:
+        messages.error(request, 'Unauthorized access.')
         return redirect('/')
     
     # Calculate totals for each item
