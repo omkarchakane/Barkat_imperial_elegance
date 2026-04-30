@@ -1,0 +1,40 @@
+{% load static %}
+<div class="quick-view-content">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="quick-view-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h4 style="font-family: 'Playfair Display', serif;">{{ product.name }}</h4>
+            <h5 class="text-muted mb-3">₹ {{ product.price }}</h5>
+            
+            {% if product.fabric or product.color or product.work %}
+            <div class="quick-view-details mb-3">
+                {% if product.fabric %}<span class="badge bg-light text-dark me-1">Fabric: {{ product.fabric }}</span>{% endif %}
+                {% if product.color %}<span class="badge bg-light text-dark me-1">Color: {{ product.color }}</span>{% endif %}
+                {% if product.work %}<span class="badge bg-light text-dark me-1">Work: {{ product.work }}</span>{% endif %}
+            </div>
+            {% endif %}
+            
+            <p class="text-muted small mb-3">{{ product.description|truncatewords:30 }}</p>
+            
+            {% if avg_rating > 0 %}
+            <div class="mb-3">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= avg_rating %}
+                    <i class="bi bi-star-fill text-warning"></i>
+                    {% else %}
+                    <i class="bi bi-star text-warning"></i>
+                    {% endif %}
+                {% endfor %}
+                <span class="text-muted small">({{ reviews.count }} reviews)</span>
+            </div>
+            {% endif %}
+            
+            <a href="/product/{{ product.id }}" class="btn btn-imperial btn-sm">View Full Details</a>
+            <a href="/buy_now/{{ product.id }}/" class="btn btn-imperial btn-sm">Buy Now</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,56 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-imperial fixed-top">
+  <div class="container">
+    <a class="navbar-brand navbar-brand-logo" href="/" aria-label="Barkat home">
+      <img src="{% static 'logo/Brand_Logo.png' %}" alt="Barkat" class="navbar-logo">
+      <img src="{% static 'logo/Barkat.png' %}" alt="Barkat" class="navbar-wordmark">
+    </a>
+    
+    <button class="navbar-toggler navbar-toggler-imperial border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        
+        <li class="nav-item">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+
+        {% if request.session.user %}
+        <li class="nav-item">
+          <a class="nav-link position-relative" href="/wishlist">
+            <i class="bi bi-heart"></i> Wishlist
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link position-relative" href="/cart">
+            <i class="bi bi-bag"></i> Cart
+            {% if cart_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill badge-gold">
+              {{ cart_count }}
+            </span>
+            {% endif %}
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="/login">Login</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/register">Register</a>
+        </li>
+        {% endif %}
+
+      </ul>
+    </div>
+  </div>
+</nav>
