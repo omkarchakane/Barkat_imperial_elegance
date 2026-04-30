@@ -1016,7 +1016,22 @@ footer .bi {
     }
 }
 
-/* Poster Carousel */
+/* Reveal Animation Styles */
+.parent {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+}
+
+.child {
+    display: block;
+}
+
+.reveal {
+    word-break: break-word;
+}
+
+/* Full Page Carousel - Enhanced Responsive */
 .full-carousel-section {
     position: relative;
     width: 100%;
@@ -1026,8 +1041,14 @@ footer .bi {
     background: #000;
 }
 
-.full-carousel-section .carousel-container-full,
-.full-carousel-section .carousel-wrapper-full {
+.carousel-container-full {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.carousel-wrapper-full {
     position: relative !important;
     width: 100% !important;
     height: 100% !important;
@@ -1036,28 +1057,31 @@ footer .bi {
     padding: 0 !important;
 }
 
-.full-carousel-section .carousel-item-full {
+.carousel-item-full {
     position: absolute !important;
-    inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    display: block !important;
+    top: 0 !important;
+    left: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: none !important;
+    display: block !important;
+
     opacity: 0;
     transform: translateX(100%);
     z-index: 0;
     pointer-events: none;
 }
 
-.full-carousel-section .carousel-item-full.active {
+.carousel-item-full.active {
     opacity: 1;
     transform: translateX(0);
     z-index: 2;
     pointer-events: auto;
 }
 
-.full-carousel-section .carousel-poster-image {
+.carousel-poster-image {
     position: absolute;
     inset: 0;
     display: block;
@@ -1067,21 +1091,24 @@ footer .bi {
     object-position: center top;
 }
 
-.full-carousel-section .carousel-overlay {
+/* Overlay */
+.carousel-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
     z-index: 3;
 }
 
-.full-carousel-section .carousel-content {
+/* Content */
+.carousel-content {
     position: absolute;
     bottom: 15%;
     left: 8%;
     z-index: 4;
 }
 
-.full-carousel-section .carousel-progress {
+/* Progress Bars */
+.carousel-progress {
     position: absolute;
     bottom: 20px;
     left: 5%;
@@ -1091,14 +1118,14 @@ footer .bi {
     z-index: 5;
 }
 
-.full-carousel-section .progress-bar {
+.progress-bar {
     flex: 1;
     height: 4px;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255,255,255,0.3);
     overflow: hidden;
 }
 
-.full-carousel-section .progress-fill {
+.progress-fill {
     width: 0%;
     height: 100%;
     background: #fff;
@@ -1110,9 +1137,177 @@ footer .bi {
         min-height: 420px;
     }
 
-    .full-carousel-section .carousel-content {
+    .carousel-content {
         bottom: 12%;
         left: 1rem;
+    }
+}
+
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: var(--white);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    font-size: 1.5rem;
+}
+
+.carousel-control:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.carousel-control-prev {
+    left: 30px;
+}
+
+.carousel-control-next {
+    right: 30px;
+}
+
+.carousel-indicators-full {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    gap: 12px;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background: var(--accent-color);
+    width: 30px;
+    border-radius: 6px;
+}
+
+/* Product Card Buttons */
+.product-card-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    align-items: stretch;
+}
+
+.btn-add-cart {
+    flex: 1;
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 10px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-add-cart:hover {
+    background: var(--accent-color);
+    color: var(--primary-color);
+}
+
+.btn-buy-now {
+    width: 45px;
+    height: auto;
+    padding: 10px;
+    background: linear-gradient(135deg, var(--accent-color) 0%, #F8D876 100%);
+    color: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.btn-buy-now:hover {
+    background: linear-gradient(135deg, #F8D876 0%, var(--accent-color) 100%);
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(212, 165, 116, 0.5);
+    color: var(--primary-color);
+}
+
+.carousel-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.carousel-btn-view,
+.carousel-btn-buy {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.carousel-btn-view {
+    background: #f0f0f0;
+    color: var(--primary-color);
+    border: 1px solid #ddd;
+}
+
+.carousel-btn-view:hover {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.carousel-btn-buy {
+    background: var(--accent-color);
+    color: var(--primary-color);
+    border: none;
+    font-weight: 600;
+}
+
+.carousel-btn-buy:hover {
+    background: #F8D876;
+    color: var(--white);
+}
+
+@media (max-width: 768px) {
+    .carousel-control {
+        width: 40px;
+        height: 40px;
+    }
+
+    .carousel-control-prev {
+        left: 10px;
+    }
+
+    .carousel-control-next {
+        right: 10px;
     }
 }
 
@@ -1130,17 +1325,9 @@ footer .bi {
     box-shadow: 0 0 0 0.12rem rgba(212, 175, 55, 0.45);
 }
 
-.product-card-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    align-items: stretch;
-}
-
 .product-card-buttons .btn-add-cart,
 .carousel-btn-view,
 .carousel-btn-buy {
-    flex: 1;
     min-height: 44px;
     background: var(--primary-color);
     color: var(--white);
@@ -1150,11 +1337,6 @@ footer .bi {
     letter-spacing: 0.7px;
     font-size: 0.82rem;
     font-weight: 600;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
 }
 
 .product-card-buttons .btn-add-cart:hover,
