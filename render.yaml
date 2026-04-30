@@ -2,9 +2,8 @@ services:
   - type: web
     name: barkat-imperial-elegance
     runtime: python
-    rootDir: Barkat_imperial_elegance
-    buildCommand: bash build.sh
-    startCommand: python manage.py migrate --noinput && gunicorn barkat.wsgi:application --bind 0.0.0.0:$PORT
+    buildCommand: bash Barkat_imperial_elegance/build.sh
+    startCommand: cd Barkat_imperial_elegance && python manage.py migrate --noinput && gunicorn barkat.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.4
