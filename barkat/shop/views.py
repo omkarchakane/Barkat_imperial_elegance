@@ -111,6 +111,22 @@ def add_cart(request,id):
         )
     return redirect('/cart')
 
+def buy_now(request,id):
+    if not request.session.get('user'):
+        return redirect('/login')
+    product = Product.objects.get(id=id)
+    cart_item = Cart.objects.filter(username=request.session['user'], product=product).first()
+    if cart_item:
+        cart_item.quantity += 1
+        cart_item.save()
+    else:
+        Cart.objects.create(
+            username = request.session['user'],
+            product=product,
+            quantity=1
+        )
+    return redirect('/checkout/order-summary/')
+
 def cart(request):
     if not request.session.get('user'):
         return redirect ('/login')
