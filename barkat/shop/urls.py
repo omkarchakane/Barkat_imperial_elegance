@@ -13,6 +13,7 @@ urlpatterns = [
     path('increase/<int:id>/',views.increase_qty),
     path('decrease/<int:id>/',views.decrease_qty),
     path('register/',views.register),
+    path('verify-email/', views.verify_email, name='verify_email'),
     path('login/',views.login),
     path('login_check/',views.login_check),
     path('logout/',views.logout),

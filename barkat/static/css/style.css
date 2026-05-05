@@ -868,6 +868,40 @@ footer .bi {
     font-weight: 500;
 }
 
+.quick-view-thumbnails {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.quick-thumb {
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.quick-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.quick-thumb.active,
+.quick-thumb:hover {
+    border-color: var(--accent-color);
+    opacity: 1;
+}
+
 /* Loading Animation */
 .spinner-border {
     width: 3rem;
@@ -969,6 +1003,48 @@ footer .bi {
     }
 }
 
+@media (max-width: 575.98px) {
+    .home-page #collection .row.g-4 {
+        --bs-gutter-x: 0.75rem;
+        --bs-gutter-y: 1rem;
+    }
+
+    .home-page #collection .product-img-wrapper {
+        height: 220px;
+    }
+
+    .home-page #collection .card-body {
+        padding: 0.8rem;
+    }
+
+    .home-page #collection .card-title {
+        font-size: 0.92rem;
+        line-height: 1.25;
+        min-height: 2.3em;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .home-page #collection .price {
+        font-size: 0.95rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .home-page #collection .product-card-buttons {
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+    .home-page #collection .product-card-buttons .btn-add-cart {
+        min-height: 38px;
+        padding: 8px 6px;
+        font-size: 0.67rem;
+        letter-spacing: 0.35px;
+    }
+}
+
 @media (max-width: 768px) {
     .carousel-btn {
         width: 40px;
@@ -1046,6 +1122,12 @@ footer .bi {
     object-position: center top;
 }
 
+.full-carousel-section .carousel-poster-media {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
+
 .full-carousel-section .carousel-overlay {
     position: absolute;
     inset: 0;
@@ -1085,13 +1167,30 @@ footer .bi {
 
 @media (max-width: 768px) {
     .full-carousel-section {
-        height: 70vh;
+        height: 82vh;
+        height: 82svh;
         min-height: 420px;
     }
 
+    .full-carousel-section .carousel-item-full {
+        background: #140303;
+    }
+
+    .full-carousel-section .carousel-poster-image {
+        object-fit: contain;
+        object-position: center center;
+    }
+
     .full-carousel-section .carousel-content {
-        bottom: 12%;
-        left: 1rem;
+        bottom: 10%;
+        left: 0.85rem;
+        right: 0.85rem;
+    }
+
+    .full-carousel-section .carousel-progress {
+        left: 0.85rem;
+        right: 0.85rem;
+        bottom: 12px;
     }
 }
 
