@@ -9,12 +9,12 @@
             {% csrf_token %}
             <div class="mb-3">
                 <label class="form-label text-muted">Full Name</label>
-                <input type="text" name="name" class="form-control form-control-imperial" required>
+                <input type="text" name="name" value="{{ form_data.name|default:'' }}" class="form-control form-control-imperial" required>
             </div>
 
             <div class="mb-3">
                 <label class="form-label text-muted">Email Address</label>
-                <input type="email" name="email" class="form-control form-control-imperial" required>
+                <input type="email" name="email" value="{{ form_data.email|default:'' }}" class="form-control form-control-imperial" required>
             </div>
             
             <div class="mb-3">
@@ -25,6 +25,7 @@
             <div class="mb-4">
                 <label class="form-label text-muted">Confirm Password</label>
                 <input type="password" name="confirm_password" class="form-control form-control-imperial" required>
+                <small class="text-muted">Use at least 8 characters and avoid common passwords.</small>
             </div>
             
             <button class="btn btn-add-cart w-100 py-2">Register</button>

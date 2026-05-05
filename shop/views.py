@@ -10,12 +10,16 @@ from django.utils.dateparse import parse_datetime
 from django.shortcuts import get_object_or_404, render,redirect
 from datetime import timedelta
 import random
+import logging
+import smtplib
 from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist,Order,OrderItem
 
 REGISTRATION_PENDING_KEY = 'pending_registration'
 REGISTRATION_OTP_KEY = 'registration_otp'
 REGISTRATION_OTP_EXPIRY_KEY = 'registration_otp_expiry'
 REGISTRATION_OTP_MINUTES = 10
+
+logger = logging.getLogger(__name__)
 
 def home(request):
     search = request.GET.get('search')
@@ -258,26 +262,43 @@ def send_registration_otp(request, name, email):
         connection=connection,
     )
 
+
+def render_register_form(request, name='', email=''):
+    return render(
+        request,
+        "register.html",
+        {
+            'form_data': {
+                'name': name,
+                'email': email,
+            }
+        },
+    )
+
 def register(request):
     if request.method =="POST":
-        name = request.POST['name'].strip()
-        email = request.POST['email'].strip().lower()
-        password = request.POST['password']
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
+
+        if not name or not email or not password:
+            messages.error(request, 'Please fill all required fields.')
+            return render_register_form(request, name=name, email=email)
 
         if UserRegister.objects.filter(email=email).exists():
             messages.error(request, 'An account with this email already exists.')
-            return redirect('/register')
+            return render_register_form(request, name=name, email=email)
 
         if password != confirm_password:
             messages.error(request, 'Passwords do not match.')
-            return redirect('/register')
+            return render_register_form(request, name=name, email=email)
 
         try:
             validate_password(password)
         except ValidationError as exc:
             messages.error(request, ' '.join(exc.messages))
-            return redirect('/register')
+            return render_register_form(request, name=name, email=email)
 
         request.session[REGISTRATION_PENDING_KEY] = {
             'name': name,
@@ -288,17 +309,41 @@ def register(request):
 
         try:
             send_registration_otp(request, name, email)
+        except smtplib.SMTPAuthenticationError:
+            clear_registration_session(request)
+            logger.exception('SMTP authentication failed while sending OTP for %s', email)
+            messages.error(
+                request,
+                'Email service authentication failed. Please contact support or try again later.',
+            )
+            return render_register_form(request, name=name, email=email)
+        except smtplib.SMTPException:
+            clear_registration_session(request)
+            logger.exception('SMTP error while sending OTP for %s', email)
+            messages.error(
+                request,
+                'Email service is temporarily unavailable. Please try again in a minute.',
+            )
+            return render_register_form(request, name=name, email=email)
         except Exception:
             clear_registration_session(request)
+            logger.exception('Unexpected error while sending OTP for %s', email)
             messages.error(
                 request,
                 'We could not send verification email. Please check email settings and try again.',
             )
-            return redirect('/register')
+            return render_register_form(request, name=name, email=email)
 
         messages.success(request, 'Verification code sent to your email.')
         return redirect('/verify-email/')
-    return render (request,"register.html")
+    pending = request.session.get(REGISTRATION_PENDING_KEY)
+    if pending:
+        return render_register_form(
+            request,
+            name=pending.get('name', ''),
+            email=pending.get('email', ''),
+        )
+    return render_register_form(request)
 
 
 def verify_email(request):
