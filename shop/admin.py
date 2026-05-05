@@ -7,11 +7,17 @@ class ProductImageAdmin(admin.ModelAdmin):
     list_display = ('product', 'image')
     search_fields = ('product__name',)
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 3
+    fields = ('image',)
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name','price','is_new_arrival','offer_text','fabric','color','work')
     list_filter = ('is_new_arrival','fabric','color','work')
     search_fields = ('name','description','fabric','color')
+    inlines = [ProductImageInline]
     fieldsets = (
         ('Basic Info', {
             'fields': ('name','price','image','description')
@@ -43,8 +49,14 @@ class UserRegisterAdmin(admin.ModelAdmin):
 
 @admin.register(OfferPoster)
 class OfferPosterAdmin(admin.ModelAdmin):
-    list_display = ('title','active')
+    list_display = ('title','active','has_mobile_image')
     list_filter = ('active',)
+    search_fields = ('title',)
+    fields = ('title', 'image', 'mobile_image', 'active')
+
+    @admin.display(boolean=True, description='Mobile Image')
+    def has_mobile_image(self, obj):
+        return bool(obj.mobile_image)
 
 
 class OrderItemInline(admin.TabularInline):

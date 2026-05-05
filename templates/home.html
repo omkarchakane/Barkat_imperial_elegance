@@ -28,7 +28,12 @@
         <div class="carousel-wrapper-full">
             {% for poster in posters %}
             <div class="carousel-item-full{% if forloop.first %} active{% endif %}">
-                <img src="{{ poster.image.url }}" class="carousel-poster-image">
+                <picture class="carousel-poster-media">
+                    {% if poster.mobile_image %}
+                    <source media="(max-width: 768px)" srcset="{{ poster.mobile_image.url }}">
+                    {% endif %}
+                    <img src="{{ poster.image.url }}" class="carousel-poster-image" alt="{{ poster.title }}">
+                </picture>
 
                 <div class="carousel-overlay"></div>
 
@@ -118,7 +123,7 @@
     <!-- Products Grid -->
     <div class="row g-4">
         {% for p in products %}
-        <div class="col-md-4 product-reveal">
+        <div class="col-6 col-md-4 product-reveal">
             <div class="product-card">
                 <div class="product-img-wrapper">
                     {% if p.image %}
@@ -458,6 +463,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Quick View Modal
     const quickViewModal = document.getElementById('quickViewModal');
     const quickViewContent = document.getElementById('quickViewContent');
+
+    quickViewContent?.addEventListener('click', function(event) {
+        const thumb = event.target.closest('.quick-thumb');
+        if (!thumb) return;
+
+        const imageSrc = thumb.getAttribute('data-image-src');
+        const targetId = thumb.getAttribute('data-main-image-target');
+        const mainImage = targetId ? document.getElementById(targetId) : null;
+        if (!imageSrc || !mainImage) return;
+
+        mainImage.src = imageSrc;
+
+        quickViewContent.querySelectorAll('.quick-thumb').forEach(function(item) {
+            item.classList.remove('active');
+        });
+        thumb.classList.add('active');
+    });
     
     quickViewModal?.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;

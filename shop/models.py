@@ -38,6 +38,13 @@ class Product(models.Model):
 class OfferPoster(models.Model):
     title = models.CharField(max_length=150)
     image = models.FileField(upload_to='posters/', storage=storage)
+    mobile_image = models.FileField(
+        upload_to='posters/mobile/',
+        storage=storage,
+        blank=True,
+        null=True,
+        help_text="Optional portrait/phone-optimized image shown on mobile screens.",
+    )
     active = models.BooleanField(default=True)
 
     def __str__(self):

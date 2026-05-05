@@ -1,10 +1,21 @@
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.db import DatabaseError, models
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.shortcuts import get_object_or_404, render,redirect
+from datetime import timedelta
+import random
 from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist,Order,OrderItem
+
+REGISTRATION_PENDING_KEY = 'pending_registration'
+REGISTRATION_OTP_KEY = 'registration_otp'
+REGISTRATION_OTP_EXPIRY_KEY = 'registration_otp_expiry'
+REGISTRATION_OTP_MINUTES = 10
 
 def home(request):
     search = request.GET.get('search')
@@ -100,7 +111,7 @@ def create_product_review(request, product):
     messages.success(request, 'Thank you for reviewing this product.')
 
 def product(request, id):
-    product = get_object_or_404(Product, id=id)  #! show the single data 
+    product = get_object_or_404(Product.objects.prefetch_related('images'), id=id)  #! show the single data 
     reviews = Review.objects.filter(product=product).order_by('-created_at')
     
     # Calculate average rating
@@ -135,7 +146,7 @@ def product(request, id):
 
 # Quick view for product modal
 def quick_view(request, id):
-    product = get_object_or_404(Product, id=id)
+    product = get_object_or_404(Product.objects.prefetch_related('images'), id=id)
     reviews = Review.objects.filter(product=product)
     avg_rating = sum([r.rating for r in reviews]) / len(reviews) if reviews else 0
     
@@ -214,6 +225,37 @@ def decrease_qty(request,id):
         item.save()
     return redirect('/cart')   
 
+
+def clear_registration_session(request):
+    request.session.pop(REGISTRATION_PENDING_KEY, None)
+    request.session.pop(REGISTRATION_OTP_KEY, None)
+    request.session.pop(REGISTRATION_OTP_EXPIRY_KEY, None)
+
+
+def send_registration_otp(request, name, email):
+    otp = f"{random.randint(100000, 999999)}"
+    expires_at = timezone.now() + timedelta(minutes=REGISTRATION_OTP_MINUTES)
+
+    request.session[REGISTRATION_OTP_KEY] = otp
+    request.session[REGISTRATION_OTP_EXPIRY_KEY] = expires_at.isoformat()
+    request.session.modified = True
+
+    subject = "Barkat verification code"
+    message = (
+        f"Hi {name},\n\n"
+        f"Your Barkat verification code is: {otp}\n"
+        f"This code expires in {REGISTRATION_OTP_MINUTES} minutes.\n\n"
+        "If you did not request this, you can ignore this email."
+    )
+
+    send_mail(
+        subject,
+        message,
+        getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+        [email],
+        fail_silently=False,
+    )
+
 def register(request):
     if request.method =="POST":
         name = request.POST['name'].strip()
@@ -235,15 +277,80 @@ def register(request):
             messages.error(request, ' '.join(exc.messages))
             return redirect('/register')
 
+        request.session[REGISTRATION_PENDING_KEY] = {
+            'name': name,
+            'email': email,
+            'password_hash': make_password(password),
+        }
+        request.session.modified = True
+
+        try:
+            send_registration_otp(request, name, email)
+        except Exception:
+            clear_registration_session(request)
+            messages.error(
+                request,
+                'We could not send verification email. Please check email settings and try again.',
+            )
+            return redirect('/register')
+
+        messages.success(request, 'Verification code sent to your email.')
+        return redirect('/verify-email/')
+    return render (request,"register.html")
+
+
+def verify_email(request):
+    pending = request.session.get(REGISTRATION_PENDING_KEY)
+    if not pending:
+        messages.info(request, 'Start registration first.')
+        return redirect('/register')
+
+    if request.method == "POST":
+        if request.POST.get('action') == 'resend':
+            try:
+                send_registration_otp(request, pending['name'], pending['email'])
+            except Exception:
+                messages.error(
+                    request,
+                    'We could not resend verification email. Please try again.',
+                )
+            else:
+                messages.success(request, 'A new verification code has been sent.')
+            return redirect('/verify-email/')
+
+        otp_input = request.POST.get('otp', '').strip()
+        stored_otp = request.session.get(REGISTRATION_OTP_KEY)
+        expiry_raw = request.session.get(REGISTRATION_OTP_EXPIRY_KEY)
+        expiry_time = parse_datetime(expiry_raw) if expiry_raw else None
+
+        if not otp_input:
+            messages.error(request, 'Please enter the verification code.')
+            return redirect('/verify-email/')
+
+        if not stored_otp or not expiry_time or timezone.now() > expiry_time:
+            messages.error(request, 'Verification code expired. Please resend a new code.')
+            return redirect('/verify-email/')
+
+        if otp_input != stored_otp:
+            messages.error(request, 'Invalid verification code.')
+            return redirect('/verify-email/')
+
+        if UserRegister.objects.filter(email=pending['email']).exists():
+            clear_registration_session(request)
+            messages.error(request, 'This email is already registered. Please log in.')
+            return redirect('/login')
+
         UserRegister.objects.create(
-            name = name,
-            email= email,
-            password = make_password(password)
+            name=pending['name'],
+            email=pending['email'],
+            password=pending['password_hash'],
         )
 
-        messages.success(request, 'Your account has been created. Please log in.')
-        return redirect ('/login')
-    return render (request,"register.html")
+        clear_registration_session(request)
+        messages.success(request, 'Email verified. Account created successfully.')
+        return redirect('/login')
+
+    return render(request, "verify_email.html", {'pending_email': pending.get('email', '')})
 
 def login(request):
     return render(request,"login.html")
