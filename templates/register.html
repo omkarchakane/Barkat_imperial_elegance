@@ -4,6 +4,14 @@
 <div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh; margin-top: 80px;">
     <div class="card shadow-lg border-0 p-5" style="max-width: 400px; width: 100%;">
         <h3 class="text-center mb-4" style="font-family: 'Playfair Display', serif; color: var(--primary-color);">Join Barkat</h3>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} py-2 small" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
         
         <form method="post">
             {% csrf_token %}

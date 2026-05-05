@@ -12,6 +12,7 @@ from datetime import timedelta
 import random
 import logging
 import smtplib
+import socket
 from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist,Order,OrderItem
 
 REGISTRATION_PENDING_KEY = 'pending_registration'
@@ -323,6 +324,14 @@ def register(request):
             messages.error(
                 request,
                 'Email service is temporarily unavailable. Please try again in a minute.',
+            )
+            return render_register_form(request, name=name, email=email)
+        except socket.timeout:
+            clear_registration_session(request)
+            logger.exception('SMTP timeout while sending OTP for %s', email)
+            messages.error(
+                request,
+                'Email server timed out. Please try again in a minute.',
             )
             return render_register_form(request, name=name, email=email)
         except Exception:
