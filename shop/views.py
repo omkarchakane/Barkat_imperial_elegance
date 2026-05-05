@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
+from django.core.mail import get_connection, send_mail
 from django.db import DatabaseError, models
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -248,12 +248,14 @@ def send_registration_otp(request, name, email):
         "If you did not request this, you can ignore this email."
     )
 
+    connection = get_connection(timeout=getattr(settings, 'EMAIL_TIMEOUT', 10) or 10)
     send_mail(
         subject,
         message,
         getattr(settings, 'DEFAULT_FROM_EMAIL', None),
         [email],
         fail_silently=False,
+        connection=connection,
     )
 
 def register(request):

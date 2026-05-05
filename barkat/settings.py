@@ -215,6 +215,7 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = get_bool('EMAIL_USE_TLS', default=True)
 EMAIL_USE_SSL = get_bool('EMAIL_USE_SSL', default=False)
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
 DEFAULT_FROM_EMAIL = config(
     'DEFAULT_FROM_EMAIL',
     default=EMAIL_HOST_USER or 'no-reply@barkat.local',
