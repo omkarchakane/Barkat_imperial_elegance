@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.9">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4.0">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -99,6 +99,46 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
     
     {% block extra_js %}{% endblock %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!('IntersectionObserver' in window)) return;
+
+        const revealSelectors = [
+            '.section-title',
+            '.product-card',
+            '.carousel-product-card',
+            '.search-container',
+            '.card',
+            '.accordion-item',
+            '.table-responsive',
+            'footer .row > div',
+            '.newsletter-section .col-md-8'
+        ];
+
+        const elements = document.querySelectorAll(revealSelectors.join(','));
+        if (!elements.length) return;
+
+        elements.forEach(function (el, index) {
+            el.classList.add('scroll-reveal');
+            el.style.setProperty('--reveal-delay', ((index % 6) * 55) + 'ms');
+        });
+
+        const observer = new IntersectionObserver(function (entries, obs) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('in-view');
+                obs.unobserve(entry.target);
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        elements.forEach(function (el) {
+            observer.observe(el);
+        });
+    });
+    </script>
 
 </body>
 </html>

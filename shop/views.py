@@ -290,7 +290,45 @@ def login_check(request):
 def logout(request):
     request.session.pop('user', None)
     request.session.pop('customer_name', None)
-    return redirect('/login')    
+    return redirect('/login/')
+
+
+def profile(request):
+    if not request.session.get('user'):
+        return redirect('/login/')
+
+    user_email = request.session['user']
+    user = UserRegister.objects.filter(email=user_email).first()
+
+    orders = list(
+        Order.objects.filter(username=user_email)
+        .prefetch_related('items__product')
+        .order_by('-order_date')
+    )
+    wishlist_count = Wishlist.objects.filter(username=user_email).count()
+
+    status_counts = {key: 0 for key, _ in Order.ORDER_STATUS_CHOICES}
+    status_badge_map = {
+        'pending': 'warning',
+        'confirmed': 'primary',
+        'shipped': 'info',
+        'delivered': 'success',
+        'cancelled': 'danger',
+    }
+
+    for order in orders:
+        status_counts[order.status] = status_counts.get(order.status, 0) + 1
+        order.total_items = sum(item.quantity for item in order.items.all())
+        order.badge_class = status_badge_map.get(order.status, 'secondary')
+
+    return render(request, "profile.html", {
+        'user_email': user_email,
+        'customer_name': user.name if user else request.session.get('customer_name', ''),
+        'orders': orders,
+        'status_counts': status_counts,
+        'total_orders': len(orders),
+        'wishlist_count': wishlist_count,
+    })
 
 
 def is_logged_in(request):

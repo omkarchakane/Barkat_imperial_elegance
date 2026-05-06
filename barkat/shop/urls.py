@@ -13,10 +13,10 @@ urlpatterns = [
     path('increase/<int:id>/',views.increase_qty),
     path('decrease/<int:id>/',views.decrease_qty),
     path('register/',views.register),
-    path('verify-email/', views.verify_email, name='verify_email'),
     path('login/',views.login),
     path('login_check/',views.login_check),
     path('logout/',views.logout),
+    path('profile/', views.profile, name='profile'),
     # Checkout flow
     path('checkout/order-summary/', views.checkout_order_summary, name='checkout_order_summary'),
     path('checkout/shipping/', views.checkout_shipping, name='checkout_shipping'),

@@ -1,19 +1,7 @@
-import random
-from datetime import timedelta
-
-from django.conf import settings
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.db import models
 from django.shortcuts import get_object_or_404, render,redirect
-from django.utils import timezone
-from django.utils.dateparse import parse_datetime
 from .models import Product,Review,Cart,UserRegister,OfferPoster,ProductImage,Wishlist,Order,OrderItem
-
-REGISTRATION_PENDING_KEY = 'pending_registration'
-REGISTRATION_OTP_KEY = 'registration_otp'
-REGISTRATION_OTP_EXPIRY_KEY = 'registration_otp_expiry'
-REGISTRATION_OTP_MINUTES = 10
 
 def home(request):
     search = request.GET.get('search')
@@ -174,36 +162,6 @@ def decrease_qty(request,id):
     return redirect('/cart')   
 
 
-def clear_registration_session(request):
-    request.session.pop(REGISTRATION_PENDING_KEY, None)
-    request.session.pop(REGISTRATION_OTP_KEY, None)
-    request.session.pop(REGISTRATION_OTP_EXPIRY_KEY, None)
-
-
-def send_registration_otp(request, name, email):
-    otp = f"{random.randint(100000, 999999)}"
-    expires_at = timezone.now() + timedelta(minutes=REGISTRATION_OTP_MINUTES)
-
-    request.session[REGISTRATION_OTP_KEY] = otp
-    request.session[REGISTRATION_OTP_EXPIRY_KEY] = expires_at.isoformat()
-    request.session.modified = True
-
-    subject = "Barkat verification code"
-    message = (
-        f"Hi {name},\n\n"
-        f"Your Barkat verification code is: {otp}\n"
-        f"This code expires in {REGISTRATION_OTP_MINUTES} minutes.\n\n"
-        "If you did not request this, you can ignore this email."
-    )
-
-    send_mail(
-        subject,
-        message,
-        getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-        [email],
-        fail_silently=False,
-    )
-
 def register(request):
     if request.method == "POST":
         name = request.POST.get('name', '').strip()
@@ -223,79 +181,14 @@ def register(request):
             messages.error(request, 'Passwords do not match.')
             return redirect('/register')
 
-        request.session[REGISTRATION_PENDING_KEY] = {
-            'name': name,
-            'email': email,
-            'password': password,
-        }
-
-        try:
-            send_registration_otp(request, name, email)
-        except Exception:
-            clear_registration_session(request)
-            messages.error(
-                request,
-                'We could not send verification email. Please check email settings and try again.',
-            )
-            return redirect('/register')
-
-        messages.success(request, 'Verification code sent to your email.')
-        return redirect('/verify-email/')
-    return render (request,"register.html")
-
-
-def verify_email(request):
-    pending = request.session.get(REGISTRATION_PENDING_KEY)
-    if not pending:
-        messages.info(request, 'Start registration first.')
-        return redirect('/register')
-
-    if request.method == "POST":
-        if request.POST.get('action') == 'resend':
-            try:
-                send_registration_otp(request, pending['name'], pending['email'])
-            except Exception:
-                messages.error(
-                    request,
-                    'We could not resend verification email. Please try again.',
-                )
-            else:
-                messages.success(request, 'A new verification code has been sent.')
-            return redirect('/verify-email/')
-
-        otp_input = request.POST.get('otp', '').strip()
-        stored_otp = request.session.get(REGISTRATION_OTP_KEY)
-        expiry_raw = request.session.get(REGISTRATION_OTP_EXPIRY_KEY)
-        expiry_time = parse_datetime(expiry_raw) if expiry_raw else None
-
-        if not otp_input:
-            messages.error(request, 'Please enter the verification code.')
-            return redirect('/verify-email/')
-
-        if not stored_otp or not expiry_time or timezone.now() > expiry_time:
-            messages.error(request, 'Verification code expired. Please resend a new code.')
-            return redirect('/verify-email/')
-
-        if otp_input != stored_otp:
-            messages.error(request, 'Invalid verification code.')
-            return redirect('/verify-email/')
-
-        if UserRegister.objects.filter(email=pending['email']).exists():
-            clear_registration_session(request)
-            messages.error(request, 'This email is already registered. Please log in.')
-            return redirect('/login')
-
         UserRegister.objects.create(
-            name=pending['name'],
-            email=pending['email'],
-            password=pending['password'],
+            name=name,
+            email=email,
+            password=password,
         )
-
-        clear_registration_session(request)
-        messages.success(request, 'Email verified. Account created successfully.')
+        messages.success(request, 'Your account has been created. Please log in.')
         return redirect('/login')
-
-    return render(request, "verify_email.html", {'pending_email': pending.get('email', '')})
+    return render (request,"register.html")
 
 def login(request):
     return render(request,"login.html")
@@ -317,8 +210,47 @@ def login_check(request):
         return redirect ('/login')    
     
 def logout(request):
-    del request.session['user']
+    request.session.pop('user', None)
+    request.session.pop('customer_name', None)
     return redirect('/login')    
+
+
+def profile(request):
+    if not request.session.get('user'):
+        return redirect('/login')
+
+    user_email = request.session['user']
+    user = UserRegister.objects.filter(email=user_email).first()
+
+    orders = list(
+        Order.objects.filter(username=user_email)
+        .prefetch_related('items__product')
+        .order_by('-order_date')
+    )
+    wishlist_count = Wishlist.objects.filter(username=user_email).count()
+
+    status_counts = {key: 0 for key, _ in Order.ORDER_STATUS_CHOICES}
+    status_badge_map = {
+        'pending': 'warning',
+        'confirmed': 'primary',
+        'shipped': 'info',
+        'delivered': 'success',
+        'cancelled': 'danger',
+    }
+
+    for order in orders:
+        status_counts[order.status] = status_counts.get(order.status, 0) + 1
+        order.total_items = sum(item.quantity for item in order.items.all())
+        order.badge_class = status_badge_map.get(order.status, 'secondary')
+
+    return render(request, "profile.html", {
+        'user_email': user_email,
+        'customer_name': user.name if user else request.session.get('customer_name', ''),
+        'orders': orders,
+        'status_counts': status_counts,
+        'total_orders': len(orders),
+        'wishlist_count': wishlist_count,
+    })
 
 
 def is_logged_in(request):
