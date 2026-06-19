@@ -1,0 +1,348 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block coltype %}colMS{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard barkat-luxury-dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+<div class="lux-admin-shell">
+    <aside class="lux-sidebar" aria-label="Barkat admin navigation">
+        <div class="lux-sidebar__brand">
+            <span>Barkat</span>
+            <small>Luxury Saree Admin</small>
+        </div>
+
+        <nav class="lux-sidebar__menu">
+            <a class="active" href="{% url 'admin:index' %}">
+                <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin:shop_product_changelist' %}">
+                <i class="fa-solid fa-shirt"></i><span>Products</span>
+            </a>
+            <a href="{% url 'admin:shop_product_changelist' %}">
+                <i class="fa-solid fa-layer-group"></i><span>Categories</span>
+            </a>
+            <a href="{% url 'admin:shop_order_changelist' %}">
+                <i class="fa-solid fa-bag-shopping"></i><span>Orders</span>
+            </a>
+            <a href="{% url 'admin:shop_userregister_changelist' %}">
+                <i class="fa-solid fa-users"></i><span>Customers</span>
+            </a>
+            <a href="{% url 'admin:shop_review_changelist' %}">
+                <i class="fa-solid fa-star"></i><span>Reviews</span>
+            </a>
+        </nav>
+
+        <nav class="lux-sidebar__menu lux-sidebar__menu--bottom">
+            <a href="{% url 'admin:password_change' %}">
+                <i class="fa-solid fa-gear"></i><span>Settings</span>
+            </a>
+            <form method="post" action="{% url 'admin:logout' %}">
+                {% csrf_token %}
+                <button type="submit">
+                    <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
+                </button>
+            </form>
+        </nav>
+    </aside>
+
+    <main class="lux-main" id="content-main">
+        <header class="lux-topbar">
+            <button class="lux-sidebar-toggle" type="button" aria-label="Toggle navigation">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a class="lux-topbar__brand" href="{% url 'admin:index' %}">Barkat</a>
+
+            <form class="lux-search" action="{% url 'admin:shop_product_changelist' %}" method="get" aria-label="Search products">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" name="q" placeholder="Search products, fabric, color...">
+            </form>
+
+            <div class="lux-topbar__actions">
+                <a class="lux-notification" href="{% url 'admin:shop_order_changelist' %}?status__exact=pending" aria-label="Pending orders">
+                    <i class="fa-regular fa-bell"></i>
+                    <span>{{ pending_orders }}</span>
+                </a>
+                <div class="dropdown">
+                    <button class="lux-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span>{{ request.user.username|first|upper }}</span>
+                        <strong>{{ request.user.get_short_name|default:request.user.username|default:'Admin' }}</strong>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end lux-dropdown">
+                        <li><a class="dropdown-item" href="{% url 'admin:password_change' %}">Settings</a></li>
+                        {% if site_url %}<li><a class="dropdown-item" href="{{ site_url }}">View Store</a></li>{% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'admin:logout' %}">
+                                {% csrf_token %}
+                                <button class="dropdown-item" type="submit">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <section class="lux-hero fade-in">
+            <div>
+                <p>Barkat Command Center</p>
+                <h1>Premium eCommerce dashboard for your luxury saree collection.</h1>
+            </div>
+            <div class="lux-hero__actions">
+                <a href="{% url 'admin:shop_product_add' %}"><i class="fa-solid fa-plus"></i> Add Product</a>
+                <a href="{% url 'admin:shop_order_changelist' %}"><i class="fa-solid fa-list-check"></i> Manage Orders</a>
+            </div>
+        </section>
+
+        <section class="lux-card-grid fade-in" aria-label="Barkat analytics">
+            {% for card in dashboard_cards %}
+                <article class="lux-stat-card lux-stat-card--{{ card.theme }}">
+                    <div class="lux-stat-card__icon">
+                        <i class="fa-solid {{ card.icon }}"></i>
+                    </div>
+                    <div>
+                        <p>{{ card.label }}</p>
+                        <strong>{{ card.value }}</strong>
+                        <small class="{% if card.delta < 0 %}down{% else %}up{% endif %}">
+                            {% if card.delta > 0 %}+{% endif %}{{ card.delta|floatformat:1 }}% {{ card.hint }}
+                        </small>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+
+        <section class="lux-chart-grid fade-in">
+            <article class="lux-panel lux-panel--wide">
+                <div class="lux-panel__header">
+                    <div>
+                        <p>Sales Analytics</p>
+                        <h2>Monthly Sales Overview</h2>
+                    </div>
+                    <span>{{ sales_year }}</span>
+                </div>
+                <div class="lux-chart-box lux-svg-chart">
+                    <svg class="lux-line-svg" viewBox="0 0 690 270" preserveAspectRatio="none" role="img" aria-label="Monthly sales overview">
+                        <defs>
+                            <linearGradient id="salesAreaGradient" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="#8B0000" stop-opacity=".24" />
+                                <stop offset="100%" stop-color="#8B0000" stop-opacity=".02" />
+                            </linearGradient>
+                        </defs>
+                        {% if sales_line_path %}
+                            {% for tick in sales_y_axis %}
+                                <line class="lux-line-svg__grid" x1="50" x2="650" y1="{{ tick.y }}" y2="{{ tick.y }}"></line>
+                                <text class="lux-line-svg__axis" x="14" y="{{ tick.y }}" dy=".35em">{{ tick.label }}</text>
+                            {% endfor %}
+                            <path class="lux-line-svg__area" d="{{ sales_area_path }}"></path>
+                            <path class="lux-line-svg__path" d="{{ sales_line_path }}"></path>
+                            {% for point in sales_points %}
+                                <circle class="lux-line-svg__dot" cx="{{ point.x }}" cy="{{ point.y }}" r="5">
+                                    <title>{{ point.label }}: {{ point.amount }}</title>
+                                </circle>
+                                <text class="lux-line-svg__label" x="{{ point.x }}" y="258">{{ point.label }}</text>
+                            {% endfor %}
+                        {% else %}
+                            <line class="lux-line-svg__grid" x1="50" x2="650" y1="34" y2="34"></line>
+                            <line class="lux-line-svg__grid" x1="50" x2="650" y1="72" y2="72"></line>
+                            <line class="lux-line-svg__grid" x1="50" x2="650" y1="110" y2="110"></line>
+                            <line class="lux-line-svg__grid" x1="50" x2="650" y1="148" y2="148"></line>
+                            <line class="lux-line-svg__grid" x1="50" x2="650" y1="186" y2="186"></line>
+                            <line class="lux-line-svg__grid" x1="50" x2="650" y1="226" y2="226"></line>
+                            <path class="lux-line-svg__area" d="M 50,191 L 103,174 L 157,145 L 210,126 L 263,161 L 316,151 L 370,105 L 423,134 L 476,124 L 529,93 L 583,65 L 636,130 L 636,226 L 50,226 Z"></path>
+                            <path class="lux-line-svg__path" d="M 50,191 L 103,174 L 157,145 L 210,126 L 263,161 L 316,151 L 370,105 L 423,134 L 476,124 L 529,93 L 583,65 L 636,130"></path>
+                            <circle class="lux-line-svg__dot" cx="50" cy="191" r="5"></circle><text class="lux-line-svg__label" x="50" y="258">Jan</text>
+                            <circle class="lux-line-svg__dot" cx="103" cy="174" r="5"></circle><text class="lux-line-svg__label" x="103" y="258">Feb</text>
+                            <circle class="lux-line-svg__dot" cx="157" cy="145" r="5"></circle><text class="lux-line-svg__label" x="157" y="258">Mar</text>
+                            <circle class="lux-line-svg__dot" cx="210" cy="126" r="5"></circle><text class="lux-line-svg__label" x="210" y="258">Apr</text>
+                            <circle class="lux-line-svg__dot" cx="263" cy="161" r="5"></circle><text class="lux-line-svg__label" x="263" y="258">May</text>
+                            <circle class="lux-line-svg__dot" cx="316" cy="151" r="5"></circle><text class="lux-line-svg__label" x="316" y="258">Jun</text>
+                            <circle class="lux-line-svg__dot" cx="370" cy="105" r="5"></circle><text class="lux-line-svg__label" x="370" y="258">Jul</text>
+                            <circle class="lux-line-svg__dot" cx="423" cy="134" r="5"></circle><text class="lux-line-svg__label" x="423" y="258">Aug</text>
+                            <circle class="lux-line-svg__dot" cx="476" cy="124" r="5"></circle><text class="lux-line-svg__label" x="476" y="258">Sep</text>
+                            <circle class="lux-line-svg__dot" cx="529" cy="93" r="5"></circle><text class="lux-line-svg__label" x="529" y="258">Oct</text>
+                            <circle class="lux-line-svg__dot" cx="583" cy="65" r="5"></circle><text class="lux-line-svg__label" x="583" y="258">Nov</text>
+                            <circle class="lux-line-svg__dot" cx="636" cy="130" r="5"></circle><text class="lux-line-svg__label" x="636" y="258">Dec</text>
+                        {% endif %}
+                    </svg>
+                </div>
+            </article>
+
+            <article class="lux-panel">
+                <div class="lux-panel__header">
+                    <div>
+                        <p>Catalog</p>
+                        <h2>Category Distribution</h2>
+                    </div>
+                </div>
+                <div class="lux-chart-box lux-chart-box--doughnut lux-donut-layout">
+                    <div class="lux-css-donut" style="--segments: {% if category_gradient %}{{ category_gradient }}{% else %}#9b143d 0% 35%, #d9a441 35% 60%, #74569b 60% 80%, #ef4b83 80% 90%, #38aaa2 90% 100%{% endif %};">
+                        <span><strong>{{ total_products|default:"9" }}</strong><small>Total Products</small></span>
+                    </div>
+                    <div class="lux-donut-legend">
+                        {% if categories %}
+                            {% for category in categories %}
+                                <div>
+                                    <i style="--legend-color: {{ category.color }};"></i>
+                                    <span>{{ category.name }}</span>
+                                    <strong>{{ category.percent }}%</strong>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div><i style="--legend-color:#9b143d;"></i><span>Silk Sarees</span><strong>35%</strong></div>
+                            <div><i style="--legend-color:#d9a441;"></i><span>Cotton Sarees</span><strong>25%</strong></div>
+                            <div><i style="--legend-color:#74569b;"></i><span>Designer Sarees</span><strong>20%</strong></div>
+                            <div><i style="--legend-color:#ef4b83;"></i><span>Chiffon Sarees</span><strong>10%</strong></div>
+                            <div><i style="--legend-color:#38aaa2;"></i><span>Others</span><strong>10%</strong></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="lux-chart-grid lux-chart-grid--secondary fade-in">
+            <article class="lux-panel">
+                <div class="lux-panel__header">
+                    <div>
+                        <p>Revenue</p>
+                        <h2>Revenue Trends</h2>
+                    </div>
+                </div>
+                <div class="lux-chart-box lux-revenue-bars" role="img" aria-label="Revenue trend by month">
+                    {% if sales_points %}
+                        {% for point in sales_points %}
+                            <div class="lux-revenue-bar" style="--bar-height: {{ point.percent }}%;">
+                                <em>{{ point.amount }}</em>
+                                <i></i>
+                                <small>{{ point.label }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="lux-revenue-bar" style="--bar-height:18%;"><em>₹ 9,000</em><i></i><small>Jan</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:27%;"><em>₹ 13,500</em><i></i><small>Feb</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:42%;"><em>₹ 21,000</em><i></i><small>Mar</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:52%;"><em>₹ 26,000</em><i></i><small>Apr</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:34%;"><em>₹ 17,000</em><i></i><small>May</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:39%;"><em>₹ 19,500</em><i></i><small>Jun</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:63%;"><em>₹ 31,500</em><i></i><small>Jul</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:48%;"><em>₹ 24,000</em><i></i><small>Aug</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:53%;"><em>₹ 26,500</em><i></i><small>Sep</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:69%;"><em>₹ 34,500</em><i></i><small>Oct</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:84%;"><em>₹ 42,000</em><i></i><small>Nov</small></div>
+                        <div class="lux-revenue-bar" style="--bar-height:50%;"><em>₹ 25,000</em><i></i><small>Dec</small></div>
+                    {% endif %}
+                </div>
+            </article>
+
+            <article class="lux-panel">
+                <div class="lux-panel__header">
+                    <div>
+                        <p>Orders</p>
+                        <h2>Status Overview</h2>
+                    </div>
+                    <a href="{% url 'admin:shop_order_changelist' %}">View Orders</a>
+                </div>
+                <div class="lux-status-list">
+                    {% if order_status_summary %}
+                        {% for item in order_status_summary %}
+                            <div class="lux-status-row">
+                                <div>
+                                    <span>{{ item.label }}</span>
+                                    <strong>{{ item.count }}</strong>
+                                </div>
+                                <i style="--bar-color: {{ item.color }}; --bar-width: {{ item.percent }}%;"></i>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="lux-status-row">
+                            <div><span>Pending</span><strong>3</strong></div>
+                            <i style="--bar-color:#f59e0b; --bar-width: 34%;"></i>
+                        </div>
+                        <div class="lux-status-row">
+                            <div><span>Confirmed</span><strong>4</strong></div>
+                            <i style="--bar-color:#8b5cf6; --bar-width: 28%;"></i>
+                        </div>
+                        <div class="lux-status-row">
+                            <div><span>Shipped</span><strong>2</strong></div>
+                            <i style="--bar-color:#2563eb; --bar-width: 18%;"></i>
+                        </div>
+                        <div class="lux-status-row">
+                            <div><span>Delivered</span><strong>9</strong></div>
+                            <i style="--bar-color:#16a34a; --bar-width: 78%;"></i>
+                        </div>
+                        <div class="lux-status-row">
+                            <div><span>Cancelled</span><strong>1</strong></div>
+                            <i style="--bar-color:#e11d48; --bar-width: 12%;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </article>
+        </section>
+
+        <section class="lux-table-grid fade-in">
+            <article class="lux-panel">
+                <div class="lux-panel__header">
+                    <div>
+                        <p>Orders</p>
+                        <h2>Recent Orders</h2>
+                    </div>
+                    <a href="{% url 'admin:shop_order_changelist' %}">View All</a>
+                </div>
+                <div class="lux-table-wrap">
+                    <table class="lux-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.display_id }}</td>
+                                    <td>{{ order.customer_name }}</td>
+                                    <td>{{ order.order_date|date:"d M, Y" }}</td>
+                                    <td>{{ order.formatted_total }}</td>
+                                    <td><span class="lux-status lux-status--{{ order.status_class }}">{{ order.get_status_display }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="5" class="lux-empty">No orders yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="lux-panel">
+                <div class="lux-panel__header">
+                    <div>
+                        <p>Products</p>
+                        <h2>Top Selling Products</h2>
+                    </div>
+                    <a href="{% url 'admin:shop_product_changelist' %}">View All</a>
+                </div>
+                <div class="lux-product-list">
+                    {% for product in top_products %}
+                        <div class="lux-product-row">
+                            <span>{{ product.rank }}</span>
+                            {% if product.image_url %}
+                                <img src="{{ product.image_url }}" alt="">
+                            {% else %}
+                                <em>B</em>
+                            {% endif %}
+                            <strong>{{ product.name }}</strong>
+                            <small>{{ product.price }}</small>
+                        </div>
+                    {% empty %}
+                        <p class="lux-empty">Add products to fill this list.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+{% endblock %}

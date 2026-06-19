@@ -105,20 +105,24 @@
 </section>
 {% endif %}
 
-<!-- Main Content -->
-<div class="container" style="margin-top: 5rem;" id="collection">
-
-    <!-- Search Section -->
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h2 class="section-title reveal">Exclusive Collection</h2>
-            <form method="get" class="search-container position-relative reveal">
-                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                <input type="text" name="search" class="form-control form-control-imperial ps-5" 
-                       placeholder="Search for perfection..." value="{{ request.GET.search|default:'' }}">
-            </form>
+<!-- Centered Search Section -->
+<section class="home-search-section" id="collection">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-md-9">
+                <h2 class="section-title reveal">Exclusive Collection</h2>
+                <form method="get" class="search-container search-container-featured position-relative reveal">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" name="search" class="form-control form-control-imperial ps-5"
+                           placeholder="Search for perfection..." value="{{ request.GET.search|default:'' }}">
+                </form>
+            </div>
         </div>
     </div>
+</section>
+
+<!-- Main Content -->
+<div class="container product-collection-container">
 
     <!-- Products Grid -->
     <div class="row g-4">

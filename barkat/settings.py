@@ -85,6 +85,9 @@ TEMPLATES = [
         'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
+            'libraries': {
+                'barkat_admin': 'shop.templatetags.barkat_admin',
+            },
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.template.context_processors.media',
@@ -164,6 +167,7 @@ STATICFILES_DIRS = [
 
 # Use simple storage that works reliably
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+WHITENOISE_USE_FINDERS = True
 
 # Explicitly set finders to ensure they work
 STATICFILES_FINDERS = [
